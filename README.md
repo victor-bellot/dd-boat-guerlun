@@ -79,6 +79,26 @@ $ screen -X -S sesddboat quit
 where sesddboat is the session name the has been used at the start.
 
 
+## working with GPS
+
+The following packets must have been installed :
+```
+$ sudo apt install python3-gpxpy python3-pyproj
+```
+
+The GPS is acquired and the GPGLL message is recorded in GPX format (so you can plot it in GeoPortail for example) in the **tst.gpx** file with the command:
+```
+$ python3 tst_gpx.py
+```
+
+In the NMEA message GPGLL, the latitude and longitude are given in DDmm.mmmm with DD in degrees and mm.mmmm in decimal minutes. To get the value in decimal degrees we do DD + mm.mmmm/60.0
+
+Using a projection from degrees (longitude,latitude in WGS84) to meters (UTM zone 30N) we can compute the distance in meter to a reference point. The following command executes a test:
+```
+$ python3 tst_proj.py
+```
+
+
 
 
 

@@ -3,6 +3,7 @@ import sys
 import gps_driver_v2 as gpsdrv
 import gpxpy.gpx
 
+# record GPS (GPGLL ) in a GPX file
 # requires install of gpxpy
 # sudo apt install python3-gpxpy
 
@@ -32,7 +33,7 @@ gpx.tracks.append(gpx_track)
 gpx_segment = gpxpy.gpx.GPXTrackSegment()
 gpx_track.segments.append(gpx_segment)
 
-tmax = 10*60.0 # 10 minutes max
+tmax = 10*60.0 # 10 minutes max (can be stopped before the end with Ctrl+C)
 t0 = time.time()
 while True:
     print ("---------------------------------------------------")
