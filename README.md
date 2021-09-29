@@ -51,7 +51,9 @@ There is a screen on:
 1 Socket in /run/screen/S-pi.
 
 ```
-The screen commands start with Ctrl+A. You can see a list of command here : https://guides.github.com/features/mastering-markdown/
+The screen commands start with Ctrl+A. You can see a list of usefull commands here :
+
+https://guides.github.com/features/mastering-markdown/
 
 Now, we can detach the screen session from the terminal by typing Ctrl+A d
 and we can check that the session is actually detached :
@@ -59,18 +61,19 @@ and we can check that the session is actually detached :
 $ screen -ls
 ```
 should give :
+```
 There is a screen on:
 	1404.sesddboat	(09/29/21 16:42:04)	(Detached)
 1 Socket in /run/screen/S-pi.
 ```
 
-Now we can work outside the WIFI coverage. To get access back (resume access) to the session when are back in WIFI area, type :
+Now the ddboat can work outside the WIFI coverage. To get access back (resume access) to the session when the ddboat is back in WIFI area, type :
 ```
 screen -r
 ```
 we are back on line with the ddboat !
 
-A last usefull command is to stop screen, one way to do it is :
+A last usefull command is to fully stop the screen command, one way to do it is :
 
 ```
 $ screen -X -S sesddboat quit
