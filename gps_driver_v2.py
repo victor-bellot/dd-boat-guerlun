@@ -16,6 +16,9 @@ class GpsIO:
     def init_line(self,timeout=1.0):
         self.ser = serial.Serial('/dev/ttyS0',timeout=timeout)
 
+    def init_line_devname_baudrate(self,devname,baudrate,timeout=1.0):
+        self.ser = serial.Serial(devname,baudrate=baudrate,timeout=timeout,xonxoff=False, rtscts=False, dsrdtr=False)
+        
     def close(self):
         self.ser.close()
 
