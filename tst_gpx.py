@@ -1,22 +1,38 @@
 import time
 import sys
 import gps_driver_v2 as gpsdrv
+import gpxpy.gpx
+
+# requires install of gpxpy
+# sudo apt install python3-gpxpy
 
 def cvt_gll_ddmm_2_dd (st):
-    sts =st.split(" ")
-    stlat = sts[0]
-    stlon = sts[2]
-    stlats = stlat.split(".")
-    stlons = stlon.split(".")
-    lat = double(stlats[0][0:len(stlats[0])-2])
-    lon = double(stlons[0][0:len(stlons[0])-2])
-    print (lat,lon)
+    ilat = st[0]
+    ilon = st[2]
+    olat = float(int(ilat/100))
+    olon = float(int(ilon/100))
+    olat_mm = (ilat%100)/60
+    olon_mm = (ilon%100)/60
+    olat += olat_mm
+    olon += olon_mm
+    if st[3] == "W":
+        olon = -olon
+    return olat,olon
 
 gps = gpsdrv.GpsIO()
 # debug with USB GPS
-gps.init_line_devname_baudrate("/dev/ttyUSB0",9600)
+#gps.init_line_devname_baudrate("/dev/ttyUSB0",9600)
 
-tmax = 25.0
+# open gpx buffer
+gpx = gpxpy.gpx.GPX()
+# Create first track in our GPX:
+gpx_track = gpxpy.gpx.GPXTrack()
+gpx.tracks.append(gpx_track)
+# Create first segment in our GPX track:
+gpx_segment = gpxpy.gpx.GPXTrackSegment()
+gpx_track.segments.append(gpx_segment)
+
+tmax = 10*60.0 # 10 minutes max
 t0 = time.time()
 while True:
     print ("---------------------------------------------------")
@@ -24,5 +40,17 @@ while True:
     # test GPS
     gps_data_string = gps.read_gll()
     print ("GPS:",gps_data_string)
-
+    if gps_data_string[0] == 0.0:
+        break
+    lat,lon = cvt_gll_ddmm_2_dd (gps_data_string)
+    print (lat,lon)
     
+    gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(lat, lon))
+
+    if (time.time()-t0) > tmax:
+        break
+
+fp = open("tst.gpx","w")
+fp.write(gpx.to_xml())
+fp.write("\n")
+fp.close()
