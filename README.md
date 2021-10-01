@@ -53,7 +53,7 @@ There is a screen on:
 ```
 The screen commands start with Ctrl+A. You can see a list of usefull commands here :
 
-https://guides.github.com/features/mastering-markdown/
+https://linuxize.com/post/how-to-use-linux-screen/
 
 Now, we can detach the screen session from the terminal by typing Ctrl+A d
 and we can check that the session is actually detached :
