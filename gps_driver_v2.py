@@ -29,7 +29,8 @@ class GpsIO:
         return v
 
     # read the position in the GPGLL message
-    # by default one GPGLL message is expected every 20 messages 
+    # by default one GPGLL message is expected every 20 messages
+    # warning: blocking function, not to use in control loops 
     def read_gll(self,n_try_max=20):
         val=[0.,'N',0.,'W',0.]
         for i in range(n_try_max):
@@ -55,7 +56,30 @@ class GpsIO:
                         val[4] = float(vv[5])
                     break # GPGLL found !  exit !
         return val
-   
+
+    def read_gll_non_blocking(self,timeout=0.01):
+        self.ser.timeout=timeout
+        v=self.ser.readline()
+        msg=False
+        val=[0.,'N',0.,'W',0.]
+        if len(v)>0:
+            st=v.decode("utf-8")
+            if str(st[0:6]) == "$GPGLL":
+                vv = st.split(",")
+                if len(vv[1]) > 0:
+                    val[0] = float(vv[1])
+                if len(vv[2]) > 0:
+                    val[1] = vv[2]
+                if len(vv[3]) > 0:
+                    val[2] = float(vv[3])
+                if len(vv[4]) > 0:
+                    val[3] = vv[4]
+                if len(vv[5]) > 0:
+                    val[4] = float(vv[5])
+                msg=True
+        return msg,val
+        
+    
 if __name__ == "__main__":
     gps = GpsIO()
 
@@ -64,7 +88,18 @@ if __name__ == "__main__":
     #    print (gps.read_next_message())
 
     # display the 20 positions (GPGLL) messages
-    for i in range(20):
-        print (gps.read_gll())
+    #for i in range(20):
+    #    print (gps.read_gll())
+
+    # test non blocking read for 20 positions
+    cnt=0
+    while True:
+        gll_ok,gll_data=gps.read_gll_non_blocking()
+        if gll_ok:
+            print (gll_data)
+            cnt += 1
+            if cnt==20:
+                break
+        time.sleep(0.01)
 
     gps.close()
