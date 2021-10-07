@@ -93,7 +93,16 @@ class ArduinoIO():
 
 if __name__ == "__main__":
     ard = ArduinoIO()
-    ard.send_arduino_cmd_motor (20,20)
+    try:
+        cmdl = int(sys.argv[1])
+    except:
+        cmdl = 30
+    try:
+        cmdr = int(sys.argv[2])
+    except:
+        cmdr = 30
+
+    ard.send_arduino_cmd_motor (cmdl,cmdr)
     print ("Arduino status is",ard.get_arduino_status())
     print ("cmd motors l,r are",ard.get_cmd_motor())
     print ("RC channel is",ard.get_arduino_rc_chan())
