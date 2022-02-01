@@ -4,7 +4,9 @@ import sys
 import math
 import i2creal as i2c  # currently only real I2C on ddboats (no simulated I2C)
 
-class TempLC74IO():
+# Microchip TC74 temperature sensor
+
+class TempTC74IO():
     def __init__(self):
         self.__bus_nb = 1  # 1 on DDBoat, 2 on DartV2
         self.__addr = 0x4d  # temp LC 74 sensor
@@ -35,7 +37,7 @@ class TempLC74IO():
         return self.__temp 
  
 if __name__ == "__main__":
-    temperature = TempLC74IO()
+    temperature = TempTC74IO()
     print ("Config: 0x%2.2x"%(temperature.get_config()))
     temperature.set_mode(standby=True)
     print ("Config: 0x%2.2x"%(temperature.get_config()))
