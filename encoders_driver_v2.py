@@ -17,10 +17,14 @@ import struct
 
 # data = [timer,dirLeft,dirRight,encLeft,encRight,voltLeft,voltRight]
 
+
 class EncoderIO():
     def __init__(self):
         self.baud_rate = 115200
         self.init_line()
+        self.voltLeftFilt = 0.0
+        self.voltRightFilt = 0.0
+        self.a = 0.98
 
     def init_line(self,timeout=1.0):
         self.ser = serial.Serial('/dev/ttyUSB0',self.baud_rate,timeout=timeout)
@@ -88,8 +92,13 @@ class EncoderIO():
           data.append(posRight)
           data.append(voltLeft)
           data.append(voltRight)
+          self.voltLeftFilt = self.voltLeftFilt * self.a + voltLeft * (1.0 - self.a) 
+          self.voltRightFilt = self.voltRightFilt * self.a + voltRight * (1.0 - self.a)
           if debug:
-              print (timer,sensLeft,sensRight,posLeft,posRight,voltLeft,voltRight,stc3)
+              print (timer,sensLeft,sensRight,posLeft,posRight,
+                     voltLeft,voltRight,'[',
+                     int(round(self.voltLeftFilt)),
+                     int(round(self.voltRightFilt)),']',stc3)
         return sync,data
 
     # do everything (open, sync, read, close) once (mainly for debug purpose)
