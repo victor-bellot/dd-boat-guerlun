@@ -22,9 +22,9 @@ class EncoderIO():
     def __init__(self):
         self.baud_rate = 115200
         self.init_line()
-        self.voltLeftFilt = 0.0
-        self.voltRightFilt = 0.0
-        self.a = 0.98
+        self.voltLeftFilt = 500.0
+        self.voltRightFilt = 500.0
+        self.a = 0.99
 
     def init_line(self,timeout=1.0):
         self.ser = serial.Serial('/dev/ttyUSB0',self.baud_rate,timeout=timeout)
