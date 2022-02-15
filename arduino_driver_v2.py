@@ -10,6 +10,7 @@ class ArduinoIO():
         self.cmdr = 0
         self.dirl = ' '
         self.dirr = ' '
+        print ("Init Arduino ...")
         try:
             self.arduino = serial.Serial('/dev/ttyACM0',115200,timeout=10.0)
             #arduino = serial.Serial('/dev/ttyACM1',115200,timeout=1.0)
@@ -18,6 +19,7 @@ class ArduinoIO():
         except:
             print ("Cannot initialize Arduino driver")
         signal.signal(signal.SIGINT, self.signal_handler)
+        print ("Arduino OK ...")
     
     def signal_handler(self,sig, frame):
         print('You pressed Ctrl+C! set motors to 0!')
@@ -90,6 +92,21 @@ class ArduinoIO():
                 print ("get_arduino_status timeout",timeout)
                 break
         return data
+   
+    def get_arduino_energy_saver(self,timeout=1.0):
+        strcmd = "E;"
+        #print (strcmd.encode())
+        self.arduino.write(strcmd.encode())
+        t0 = time.time()
+        while True:
+            data = self.arduino.readline()
+            if data:
+                #print (data.decode())
+                break
+            if (time.time()-t0) > timeout:
+                print ("get_arduino_status timeout",timeout)
+                break
+        return data
 
 if __name__ == "__main__":
     ard = ArduinoIO()
@@ -110,5 +127,7 @@ if __name__ == "__main__":
     print ("Hit Ctrl+C to get out!")
     while True:
         print ("arduino motors rc",ard.get_arduino_cmd_motor())
-        print ("RC channel is",ard.get_arduino_rc_chan())
-        time.sleep(1)
+        #print ("RC channel is",ard.get_arduino_rc_chan())
+        print ("ENSV: ",ard.get_arduino_energy_saver())
+
+        time.sleep(1.0)
