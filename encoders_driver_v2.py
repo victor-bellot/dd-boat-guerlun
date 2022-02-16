@@ -25,6 +25,7 @@ class EncoderIO():
         self.voltLeftFilt = 500.0
         self.voltRightFilt = 500.0
         self.a = 0.99
+        self.sync = False
 
     def init_line(self,timeout=1.0):
         self.ser = serial.Serial('/dev/ttyUSB0',self.baud_rate,timeout=timeout)
@@ -40,21 +41,34 @@ class EncoderIO():
 
     def close_line(self):
         self.ser.close()
-
+    
     # find the sync chars 0xFF and 0x0d at the beginning of the data
-    def get_sync(self):
+    def get_sync(self, max_tryout=25):
+        tryout = 0
         while True:
             c1 = self.ser.read(1)
-            if ord(c1) == 0xff:
-                c2 = self.ser.read(1)
-                if ord(c2) == 0x0d:
-                    v = self.ser.read(15)
+            if len(c1) == 0: # Catch the case c1=b''
+                tryout += 1
+                if tryout > max_tryout:
+                    self.sync = False
+                    print("sync error : [get_sync() reach max tryout] please check line")
                     break
+            else:
+                # Core of get_sync()
+                if ord(c1) == 0xff:
+                    c2 = self.ser.read(1)
+                    if ord(c2) == 0x0d:
+                        v = self.ser.read(15)
+                        self.sync = True
+                        break
+            time.sleep(0.001)
 
     # read next packet, assume sync has been done before
     # detect if sync is lost (sync false at return)
     def read_packet(self,debug=False):
-        sync = True  # assume sync has been done before
+        # check sync
+        if not self.sync:
+            self.get_sync()
         data = []
         v=self.ser.read(17)
         #print (type(v))
@@ -67,7 +81,7 @@ class EncoderIO():
         if (c1 != 0xff) or (c2 != 0x0d):
           if debug:
               print ("sync lost, exit")
-          sync = False
+          self.sync = False
         else:
           timer = (v[2] << 32)
           timer += (v[3] << 16)
@@ -99,7 +113,7 @@ class EncoderIO():
                      voltLeft,voltRight,'[',
                      int(round(self.voltLeftFilt)),
                      int(round(self.voltRightFilt)),']',stc3)
-        return sync,data
+        return self.sync,data
 
     # do everything (open, sync, read, close) once (mainly for debug purpose)
     def read_single_packet(self,debug=True):
