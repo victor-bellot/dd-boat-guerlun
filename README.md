@@ -5,6 +5,7 @@ The drivers are :
 * GPS (serial line, GPGLL message) : gps_driver_v2.py
 * Encoders on propeller rotation (serial line) : encoders_driver_v2.py
 * Arduino motors command (serial line) : arduino_driver_v2.py
+* TC74 temperature sensors (one per motor) : tc74_driver_v2.py
 
 ## testing the drivers on your ddboat
 
