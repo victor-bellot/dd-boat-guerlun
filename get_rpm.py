@@ -15,10 +15,10 @@ def delta_odo (odo1,odo0):
 if __name__ == "__main__":
     
     timeout = 1.0
-    cmdl = 60
+    cmdl = 50
     cmdr = 50
     duration = 60.0
-    tloop = 5.0 # 1/5 Hz loop)
+    tloop = 5.0 # 0.2 Hz loop
     ard = ardudrv.ArduinoIO()
     ard.send_arduino_cmd_motor (cmdl,cmdr)
     encoddrv = encdrv.EncoderIO()      
@@ -55,9 +55,9 @@ if __name__ == "__main__":
         print ("dOdoL",posLeft0,posLeft1,posLeft1-posLeft0)
         print ("dOdoR",posRight0,posRight1,posRight1-posRight0)
 
-        spdL = delta_odo(posLeft1,posLeft0)/8.0/tloop*60.0
-        spdR = delta_odo(posRight1,posRight0)/8.0/tloop*60.0
-        print ("RPM Left",spdL,"RPM Right",spdR)
+        rpmL = delta_odo(posLeft1,posLeft0)/8.0/tloop*60.0
+        rpmR = delta_odo(posRight1,posRight0)/8.0/tloop*60.0
+        print ("RPM Left",rpmL,"RPM Right",rpmR)
        
         timeAcq0 = timeAcq1
         posRight0 = posRight1
