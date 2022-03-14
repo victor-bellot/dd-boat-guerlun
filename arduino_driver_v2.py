@@ -127,7 +127,7 @@ if __name__ == "__main__":
     print ("Hit Ctrl+C to get out!")
     while True:
         print ("arduino motors rc",ard.get_arduino_cmd_motor())
-        #print ("RC channel is",ard.get_arduino_rc_chan())
+        print ("RC channel is",ard.get_arduino_rc_chan())
         print ("ENSV: ",ard.get_arduino_energy_saver())
 
         time.sleep(1.0)
