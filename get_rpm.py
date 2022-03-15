@@ -23,6 +23,7 @@ if __name__ == "__main__":
     ard.send_arduino_cmd_motor (cmdl,cmdr)
     encoddrv = encdrv.EncoderIO()      
 
+    print ("ok!")
     #sync0, timeAcq0, sensLeft0, sensRight0, posLeft0, posRight0 =  encodrv.read_single_packet(debug=True)
     while True:
         sync0,data_encoders0 = encoddrv.read_packet(debug=True)
@@ -31,6 +32,7 @@ if __name__ == "__main__":
             break
         time.sleep(0.1)
 
+    print ("ok!")
     timeAcq0 = data_encoders0[0]
     sensLeft0 = data_encoders0[1]
     sensRight0 = data_encoders0[2]
@@ -40,7 +42,10 @@ if __name__ == "__main__":
 
     t0 = time.time()
     while (time.time()-t0) < duration:
-        time.sleep (tloop)
+        t0loop = time.time()
+        while (time.time()-t0loop) < tloop:
+            sync1,data_encoders1 = encoddrv.read_packet(debug=True)
+            time.sleep(0.001)
 
         #sync1, timeAcq1, sensLeft1, sensRight1, posLeft1, posRight1 =  encodrv.read_single_packet(debug=True)
         sync1,data_encoders1 = encoddrv.read_packet(debug=True)
