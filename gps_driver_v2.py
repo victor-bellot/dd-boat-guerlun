@@ -59,7 +59,11 @@ class GpsIO:
 
     def read_gll_non_blocking(self,timeout=0.01):
         self.ser.timeout=timeout
-        v=self.ser.readline()
+        v=""
+        try:
+            v=self.ser.readline()
+        except:
+            print ("error read GPS")
         msg=False
         val=[0.,'N',0.,'W',0.]
         if len(v)>0:

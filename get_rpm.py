@@ -26,8 +26,8 @@ if __name__ == "__main__":
     print ("ok!")
     #sync0, timeAcq0, sensLeft0, sensRight0, posLeft0, posRight0 =  encodrv.read_single_packet(debug=True)
     while True:
-        sync0,data_encoders0 = encoddrv.read_packet(debug=True)
-        print (sync0)
+        sync0,data_encoders0 = encoddrv.read_packet(debug=False)
+        #print (sync0)
         if sync0:
             break
         time.sleep(0.1)
@@ -44,7 +44,7 @@ if __name__ == "__main__":
     while (time.time()-t0) < duration:
         t0loop = time.time()
         while (time.time()-t0loop) < tloop:
-            sync1,data_encoders1 = encoddrv.read_packet(debug=True)
+            sync1,data_encoders1 = encoddrv.read_packet(debug=False)
             time.sleep(0.001)
 
         #sync1, timeAcq1, sensLeft1, sensRight1, posLeft1, posRight1 =  encodrv.read_single_packet(debug=True)
