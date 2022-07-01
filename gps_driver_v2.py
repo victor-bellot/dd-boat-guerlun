@@ -28,6 +28,73 @@ class GpsIO:
         #print (v)
         return v
 
+    def compute_checksum(self,st):
+        csk = 0
+        for i in range(len(st)):
+            csk = csk ^ ord(st[i])
+        return hex(csk)[2:]
+
+    def mtk_test(self):
+        pmtk = "PMTK414"
+        pmtk = "PMTK447"
+        #pmtk = "PMTK386,0"
+        csksum = self.compute_checksum(pmtk)
+        msg = "$"
+        for c in pmtk:
+            msg += c 
+        msg += "*"
+        for c in csksum:
+            msg += c
+        print (msg)
+        msg += chr(13)
+        msg += chr(10)
+        bmsg = msg.encode() 
+        print (bmsg)
+        self.ser.write(bmsg)
+        self.ser.write(bmsg)
+        while True:
+            rcv = self.read_next_message()
+            if rcv.startswith("$PMTK"):
+                print (rcv)
+                break
+
+    def send_mtk_cmd (self,pmtk):
+        csksum = self.compute_checksum(pmtk)
+        msg = "$"
+        for c in pmtk:
+            msg += c
+        msg += "*"
+        for c in csksum:
+            msg += c
+        print (msg)
+        msg += chr(13)
+        msg += chr(10)
+        bmsg = msg.encode()
+        print (bmsg)
+        self.ser.write(bmsg)
+
+    def get_mtk_status (self):
+        while True:
+            rcv = self.read_next_message()
+            if rcv.startswith("$PMTK"):
+                print (rcv)
+                break
+        return rcv
+        
+    def get_filter_speed(self):
+        pmtk = "PMTK447"
+        self.send_mtk_cmd (pmtk)
+        rcv = self.get_mtk_status ()
+        return rcv
+
+    def set_filter_speed(self,stv):
+        # v can be 0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.5, or 2.0
+        pmtk = "PMTK386,"+stv
+        self.send_mtk_cmd (pmtk)
+        rcv = self.get_mtk_status ()
+        return rcv
+
+
     # read the position in the GPGLL message
     # by default one GPGLL message is expected every 20 messages
     # warning: blocking function, not to use in control loops 
@@ -94,6 +161,12 @@ if __name__ == "__main__":
     # display the 20 positions (GPGLL) messages
     #for i in range(20):
     #    print (gps.read_gll())
+
+    #print (gps.compute_checksum("PMTK605"))
+    gps.set_filter_speed("0.4")
+    gps.get_filter_speed()
+    gps.set_filter_speed("0")
+    gps.get_filter_speed()
 
     # test non blocking read for 20 positions
     cnt=0
