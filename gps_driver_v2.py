@@ -7,14 +7,26 @@ import time
 # https://en.wikipedia.org/wiki/NMEA_0183
 
 class GpsIO:
-    def __init__(self):
-        # open serial line connected to the GPS sensor
+    def __init__(self, tty_dev=0):
+        # default device for GPS sensor serial line is /dev/ttyGPS0 with tty_dev=0
+        # 2 other devices can be used to get GPS data
+        #    tty_dev=1 -> /dev/ttyGPS1
+        #    tty_dev=2 -> /dev/ttyGPS2
+        # so that 3 different programs can use GPS at the same time.
         self.init_line()
+        self.tty_dev = "/dev/ttyGPS0"
+        if tty_dev == 1:
+          self.tty_dev =  "/dev/ttyGPS1"
+        if tty_dev == 2:
+          self.tty_dev =  "/dev/ttyGPS2"
         #time.sleep(1.0)
         #print(ser)
    
     def init_line(self,timeout=1.0):
-        self.ser = serial.Serial('/dev/ttyS0',timeout=timeout)
+        # do not use directly the serial device connected to the GPS
+        # self.ser = serial.Serial('/dev/ttyS0',timeout=timeout)
+        # use instead the first of the 3 copies /dev/ttyGPS0
+        self.ser = serial.Serial(self.tty_dev,timeout=timeout)
 
     def init_line_devname_baudrate(self,devname,baudrate,timeout=1.0):
         self.ser = serial.Serial(devname,baudrate=baudrate,timeout=timeout,xonxoff=False, rtscts=False, dsrdtr=False)
