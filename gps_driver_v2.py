@@ -13,12 +13,12 @@ class GpsIO:
         #    tty_dev=1 -> /dev/ttyGPS1
         #    tty_dev=2 -> /dev/ttyGPS2
         # so that 3 different programs can use GPS at the same time.
-        self.init_line()
         self.tty_dev = "/dev/ttyGPS0"
         if tty_dev == 1:
           self.tty_dev =  "/dev/ttyGPS1"
         if tty_dev == 2:
           self.tty_dev =  "/dev/ttyGPS2"
+        self.init_line()
         #time.sleep(1.0)
         #print(ser)
    
