@@ -21,7 +21,6 @@ import struct
 class EncoderIO():
     def __init__(self,dev_tty=0):
         self.baud_rate = 115200
-        self.init_line()
         self.voltLeftFilt = 500.0
         self.voltRightFilt = 500.0
         self.a = 0.99
@@ -31,6 +30,7 @@ class EncoderIO():
             self.dev_tty = '/dev/ttyENC1'
         if dev_tty == 2:
             self.dev_tty = '/dev/ttyENC2'
+        self.init_line()
 
     def init_line(self,timeout=1.0):
         self.ser = serial.Serial(self.dev_tty,self.baud_rate,timeout=timeout)
