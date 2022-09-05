@@ -159,10 +159,11 @@ class EncoderIO():
         st=[]
         while True:
             ch = self.ser.read().decode("utf-8")
-            print (ch)
+            #print (ch)
             if ch == '\n':
                 break
             st.append(ch)
+        print (st)
         return st
 
 if __name__ == "__main__":        
