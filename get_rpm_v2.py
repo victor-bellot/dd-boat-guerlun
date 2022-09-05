@@ -27,11 +27,11 @@ if __name__ == "__main__":
     except:
         pass        
     duration = 60.0
-    tloop = 2.0 # 0.5 Hz loop
+    tloop = 5.0 # 0.5 Hz loop
     ard = ardudrv.ArduinoIO()
     ard.send_arduino_cmd_motor (cmdl,cmdr)
     encoddrv = encdrv.EncoderIO()      
-
+    encoddrv.set_older_value_delay_v2(50)
     t0 = time.time()
     while (time.time()-t0) < duration:
         t0loop = time.time()
