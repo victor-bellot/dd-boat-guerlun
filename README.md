@@ -103,6 +103,14 @@ $ python3 tst_proj.py
 ```
 
 
+## remote install 
+
+From a remote computer use rcp and rsh , example for DDBOAT 5
+```
+$ scp install.bash pi@172.20.25.205:/tmp/
+$ rsh 172.20.25.205 -l pi /tmp/install.bash
+```
+
 
 
 
