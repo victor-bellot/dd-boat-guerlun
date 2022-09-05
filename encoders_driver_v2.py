@@ -166,9 +166,9 @@ class EncoderIO():
         v=self.ser.write(b'C')
         st=[]
         while True:
-            ch = self.ser.read(1)
+            ch = self.ser.read()
             print (ch)
-            if ch == '\n':
+            if ch == b'\n':
                 break
             st.append(ch)
         return st
