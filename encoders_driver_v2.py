@@ -168,7 +168,7 @@ class EncoderIO():
         st.append(self.ser.read(1))
         while True:
             ch = self.ser.read(1)
-            if cf == '\0':
+            if ch == '\0':
                 break
             else:
                 st.append(ch)
