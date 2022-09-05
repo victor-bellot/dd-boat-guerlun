@@ -164,14 +164,16 @@ class EncoderIO():
     # get last value on V2 device
     def get_last_value_v2 (self):
         v=self.ser.write(b'C')
-        st=[]
-        while True:
-            ch = self.ser.read(1)
-            print (ch)
-            if ch == '\0':
-                break
-            else:
-                st.append(ch)
+        st = self.ser.read(25)
+        print (len(st),st)
+        # st=[]
+        # while True:
+        #     ch = self.ser.read(1)
+        #     print (ch)
+        #     if ch == '\0':
+        #         break
+        #     else:
+        #         st.append(ch)
         return st
 
 
