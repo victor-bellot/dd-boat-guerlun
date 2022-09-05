@@ -35,7 +35,7 @@ if __name__ == "__main__":
     while (time.time()-t0) < duration:
         t0loop = time.time()
 
-        st0,st1 = encdrv.get_last_and_older_values_v2 ()
+        st0,st1 = encdrv.get_last_and_older_values_v2()
         data_encoders0 = np.array(st0.split(",")).astype(np.float)
         data_encoders1 = np.array(st1.split(",")).astype(np.float)
 
