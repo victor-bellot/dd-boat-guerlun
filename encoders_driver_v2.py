@@ -19,7 +19,7 @@ import struct
 
 
 class EncoderIO():
-    def __init__(self,dev_tty=0):
+    def __init__(self,dev_tty=0,old=False):
         self.baud_rate = 115200
         self.voltLeftFilt = 500.0
         self.voltRightFilt = 500.0
@@ -28,7 +28,8 @@ class EncoderIO():
         # raw device : direct access to the device
         # warning : data lags if not read fast enough !!! 
         # to be compatible with old codes
-        self.dev_tty = '/dev/ttyENCRAW'
+        if old:
+            self.dev_tty = '/dev/ttyENCRAW'
         # advanced device : replicated on 3 ports /dev/ttyENC[0-2] 
         # no more lags !
         # send a command on the terminal
@@ -43,11 +44,12 @@ class EncoderIO():
         #              delta_odo_right = odo_right0 - odo_right1
         #   "Dn;" or "Dnn;" : set the nth old value 1<n<n or 01<<nn<99
         #          by default nn=20
-        self.dev_tty_v2 = '/dev/ttyENC0'
-        if dev_tty == 1:
-            self.dev_tty_v2 = '/dev/ttyENC1'
-        if dev_tty == 2:
-            self.dev_tty_v2 = '/dev/ttyENC2'
+        else:
+            self.dev_tty = '/dev/ttyENC0'
+            if dev_tty == 1:
+                self.dev_tty = '/dev/ttyENC1'
+            if dev_tty == 2:
+                self.dev_tty = '/dev/ttyENC2'
         self.init_line()
 
     def init_line(self,timeout=1.0):
@@ -60,16 +62,6 @@ class EncoderIO():
         st = os.system ("stty -F %s %d"%(self.dev_tty,self.baud_rate))
         print (st)
         st = os.system ("stty -F %s"%(self.dev_tty))
-        print (st)
-
-    def init_line_v2(self,timeout=1.0):
-        self.ser = serial.Serial(self.dev_tty_v2,self.baud_rate,timeout=timeout)
-
-    def set_baudrate_v2(self,baudrate=115200):
-        self.baud_rate = baudrate
-        st = os.system ("stty -F %s %d"%(self.dev_tty_v2,self.baud_rate))
-        print (st)
-        st = os.system ("stty -F %s"%(self.dev_tty_v2))
         print (st)
 
     def close_line(self):
@@ -166,25 +158,22 @@ class EncoderIO():
         v=self.ser.write(b'C')
         st=[]
         while True:
-            ch = self.ser.read()
+            ch = self.ser.read().decode("utf-8")
             print (ch)
-            if ch == b'\n':
+            if ch == '\n':
                 break
             st.append(ch)
         return st
 
-
-
-if __name__ == "__main__":
-    encoddrv = EncoderIO()
-        
+if __name__ == "__main__":        
     # test raw encoder data - old version
     # mind the potential time lag if read is not fast enough !
     print ("old version")
+    encoddrv_old = EncoderIO(old=True)
     cnt = 0
-    encoddrv.get_sync()
+    encoddrv_old.get_sync()
     while cnt<1:
-        sync,data_encoders = encoddrv.read_packet(debug=True)
+        sync,data_encoders = encoddrv_old.read_packet(debug=True)
         print (sync,data_encoders)
         if not sync:
             break
@@ -192,6 +181,7 @@ if __name__ == "__main__":
 
     # test the new version
     print ("new version")
+    encoddrv = EncoderIO()
     cnt = 0
     while cnt<10:
         # ask for last values
