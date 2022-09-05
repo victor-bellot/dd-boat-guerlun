@@ -229,12 +229,12 @@ if __name__ == "__main__":
         cnt += 1
 
     cnt = 0
-     while cnt<3:
+    while cnt<3:
         # ask for last values
-        data_encoders0, data_encoders1 = encoddrv.get_last_value_v2()
+        data_encoders0, data_encoders1 = encoddrv.get_last_and_older_values_v2()
         print (data_encoders0)
         print (data_encoders1)
-        print ()
+        print ("---")
         time.sleep(1.0)
         cnt += 1   
 
