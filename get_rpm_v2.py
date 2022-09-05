@@ -30,13 +30,13 @@ if __name__ == "__main__":
     tloop = 2.0 # 0.5 Hz loop
     ard = ardudrv.ArduinoIO()
     ard.send_arduino_cmd_motor (cmdl,cmdr)
-    encod_drv = encdrv.EncoderIO()      
+    encoddrv = encdrv.EncoderIO()      
 
     t0 = time.time()
     while (time.time()-t0) < duration:
         t0loop = time.time()
 
-        st0,st1 = encod_drv.get_last_and_older_values_v2()
+        st0,st1 = encoddrv.get_last_and_older_values_v2()
         data_encoders0 = np.array(st0.split(",")).astype(np.float)
         data_encoders1 = np.array(st1.split(",")).astype(np.float)
 
@@ -62,7 +62,6 @@ if __name__ == "__main__":
         print ("RPM Left",rpmL,"RPM Right",rpmR)
 
         while (time.time()-t0loop) < tloop:
-            sync1,data_encoders1 = encoddrv.read_packet(debug=False)
             time.sleep(0.001)
 
     ard.send_arduino_cmd_motor (0,0)
