@@ -40,11 +40,11 @@ if __name__ == "__main__":
         data_encoders0 = np.array(st0.split(",")).astype(np.float)
         data_encoders1 = np.array(st1.split(",")).astype(np.float)
 
-        timeAcq1 = data_encoders0[0]/10.0
-        sensLeft1 = data_encoders0[1]
-        sensRight1 = data_encoders0[2]
-        posLeft1 = data_encoders0[3]
-        posRight1 = data_encoders0[4]
+        timeAcq0 = data_encoders0[0]/10.0
+        sensLeft0 = data_encoders0[1]
+        sensRight0 = data_encoders0[2]
+        posLeft0 = data_encoders0[3]
+        posRight0 = data_encoders0[4]
 
         timeAcq1 = data_encoders1[0]/10.0
         sensLeft1 = data_encoders1[1]
