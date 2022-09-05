@@ -21,7 +21,7 @@ if __name__ == "__main__":
     tloop = 5.0 # 0.2 Hz loop
     ard = ardudrv.ArduinoIO()
     ard.send_arduino_cmd_motor (cmdl,cmdr)
-    encoddrv = encdrv.EncoderIO()      
+    encoddrv = encdrv.EncoderIO(old=True)      
 
     print ("ok!")
     #sync0, timeAcq0, sensLeft0, sensRight0, posLeft0, posRight0 =  encodrv.read_single_packet(debug=True)

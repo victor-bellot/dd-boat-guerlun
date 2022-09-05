@@ -162,7 +162,8 @@ class EncoderIO():
             #print (ch)
             if ch == '\n':
                 break
-            st.append(ch)
+            else:
+                st += ch
         print (st)
         return st
 
