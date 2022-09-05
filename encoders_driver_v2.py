@@ -162,7 +162,7 @@ class EncoderIO():
         return sync, timeAcq, sensLeft, sensRight, posLeft, posRight
 
     # get last value on V2 device
-    def get_last_value_v2 ():
+    def get_last_value_v2 (self):
         v=self.ser.write("C")
         st=[]
         st.append(self.ser.read(1))
