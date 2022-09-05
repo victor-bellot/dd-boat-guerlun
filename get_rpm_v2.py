@@ -27,15 +27,16 @@ if __name__ == "__main__":
     except:
         pass        
     duration = 60.0
-    tloop = 5.0 # 0.5 Hz loop
+    tloop = 5.0 # 0.2 Hz loop
     ard = ardudrv.ArduinoIO()
     ard.send_arduino_cmd_motor (cmdl,cmdr)
     encoddrv = encdrv.EncoderIO()      
     encoddrv.set_older_value_delay_v2(50)
+    time.sleep(1.0)
     t0 = time.time()
     while (time.time()-t0) < duration:
         t0loop = time.time()
-
+        print (".")
         st1,st0 = encoddrv.get_last_and_older_values_v2()
         data_encoders0 = np.array(st0.split(",")).astype(np.float)
         data_encoders1 = np.array(st1.split(",")).astype(np.float)
