@@ -165,7 +165,7 @@ class EncoderIO():
     def get_last_value_v2 (self):
         v=self.ser.write(b'C')
         st = self.ser.read(25)
-        print (len(st),st)
+        print (len(st),st,st.decode())
         # st=[]
         # while True:
         #     ch = self.ser.read(1)
@@ -182,9 +182,10 @@ if __name__ == "__main__":
     encoddrv = EncoderIO()
         
     # test raw encoder data (old version, mind the potentiel time lag if read is not fast enough !)
-    cnt = 0
+    print ("old version")
+     cnt = 0
     encoddrv.get_sync()
-    while cnt<10:
+    while cnt<1:
         sync,data_encoders = encoddrv.read_packet(debug=True)
         print (sync,data_encoders)
         if not sync:
@@ -192,10 +193,12 @@ if __name__ == "__main__":
         cnt += 1
 
     # test the new version
+    print ("new version")
     cnt = 0
-    while cnt<1:
+    while cnt<10:
         data_encoders = encoddrv.get_last_value_v2()
         print ()
+        cnt += 1
 
 
 
