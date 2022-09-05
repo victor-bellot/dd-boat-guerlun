@@ -82,6 +82,21 @@ $ screen -X -S sesddboat quit
 
 where sesddboat is the session name the has been used at the start.
 
+Example (log the GPS in a gpx file)
+```
+$ screen -S sesgps
+$ python3 tst_gpx.py (in the drivers-ddboat-v2 folder)
+$ CTRL+A d  
+now you can go outside the WIFI area and acquire a GPS track
+when it's done, recover the session
+$ screen -r
+$ CTRL+C to stop the acquisition
+a file called tst.gpx has been created, rename it to save the data
+$ mv tst.gpx mynicetrack.gpx
+we can now destroy the session
+$ screen -X -S  sesgps quit
+
+
 
 ## working with GPS
 
@@ -102,8 +117,12 @@ Using a projection from degrees (longitude,latitude in WGS84) to meters (UTM zon
 $ python3 tst_proj.py
 ```
 
+The gpx file can be display on **GeoPortail**. To show it on **GoogleEarth** the simpliest way is to convert it in kml :
+```
+$ gpsbabel -i gpx -f file.gpx -o kml -F file.kml
 
-## remote install 
+
+## remote install drivers for tests
 
 From a remote computer use rcp and rsh , example for DDBOAT 5
 ```
