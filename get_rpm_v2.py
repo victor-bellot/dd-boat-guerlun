@@ -32,7 +32,7 @@ if __name__ == "__main__":
     ard.send_arduino_cmd_motor (cmdl,cmdr)
     encoddrv = encdrv.EncoderIO()      
     encoddrv.set_older_value_delay_v2(50)
-    time.sleep(1.0)
+    #time.sleep(1.0)
     t0 = time.time()
     while (time.time()-t0) < duration:
         t0loop = time.time()
@@ -42,16 +42,16 @@ if __name__ == "__main__":
         data_encoders1 = np.array(st1.split(",")).astype(np.float)
 
         timeAcq0 = data_encoders0[0]/10.0
-        sensLeft0 = data_encoders0[1]
-        sensRight0 = data_encoders0[2]
-        posLeft0 = data_encoders0[3]
-        posRight0 = data_encoders0[4]
+        sensLeft0 = data_encoders0[2]
+        sensRight0 = data_encoders0[1]
+        posLeft0 = data_encoders0[4]
+        posRight0 = data_encoders0[3]
 
         timeAcq1 = data_encoders1[0]/10.0
-        sensLeft1 = data_encoders1[1]
-        sensRight1 = data_encoders1[2]
-        posLeft1 = data_encoders1[3]
-        posRight1 = data_encoders1[4]
+        sensLeft1 = data_encoders1[2]
+        sensRight1 = data_encoders1[1]
+        posLeft1 = data_encoders1[4]
+        posRight1 = data_encoders1[3]
 
         #print sync1, timeAcq1, sensLeft1, sensRight1, posLeft1, posRight1
         print ("dTime",timeAcq0,timeAcq1,timeAcq1-timeAcq0)
