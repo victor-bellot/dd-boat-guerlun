@@ -156,7 +156,7 @@ class EncoderIO():
     # get last value on V2 device
     def get_last_value_v2 (self):
         v=self.ser.write(b'C')
-        st=[]
+        st=""
         while True:
             ch = self.ser.read().decode("utf-8")
             #print (ch)
