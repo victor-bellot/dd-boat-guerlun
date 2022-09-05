@@ -203,7 +203,9 @@ class EncoderIO():
         else:
             st = "D%2d;"%(gap)
             st = st.encode("utf-8")    
-            v=self.ser.write(st)                    
+            v=self.ser.write(st)  
+        # wait 1s 
+        time.sleep(1.0)                
 if __name__ == "__main__":        
     # test raw encoder data - old version
     # mind the potential time lag if read is not fast enough !
