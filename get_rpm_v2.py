@@ -29,13 +29,13 @@ if __name__ == "__main__":
     tloop = 2.0 # 0.5 Hz loop
     ard = ardudrv.ArduinoIO()
     ard.send_arduino_cmd_motor (cmdl,cmdr)
-    encoddrv = encdrv.EncoderIO()      
+    encod_drv = encdrv.EncoderIO()      
 
     t0 = time.time()
     while (time.time()-t0) < duration:
         t0loop = time.time()
 
-        st0,st1 = encdrv.get_last_and_older_values_v2()
+        st0,st1 = encod_drv.get_last_and_older_values_v2()
         data_encoders0 = np.array(st0.split(",")).astype(np.float)
         data_encoders1 = np.array(st1.split(",")).astype(np.float)
 
