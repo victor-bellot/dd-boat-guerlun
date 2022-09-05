@@ -167,6 +167,43 @@ class EncoderIO():
         print (st)
         return st
 
+    # get last value and older value on V2 device
+    def get_last_and_older_values_v2 (self):
+        v=self.ser.write(b'P')
+        st1=""
+        while True:
+            ch = self.ser.read().decode("utf-8")
+            #print (ch)
+            if ch == '\n':
+                break
+            else:
+                st1 += ch
+        print (st1)
+        st2=""
+        while True:
+            ch = self.ser.read().decode("utf-8")
+            #print (ch)
+            if ch == '\n':
+                break
+            else:
+                st2 += ch
+        print (st2)
+        return st1,st2
+
+    # set the difference between last and older values on V2 device
+    def set_older_value_delay_v2 (self,gap):
+        if gap < 1:
+            gap = 1
+        if gap > 99:
+            gap = 99
+        if gap < 10:
+            st = "D%1d;"%(gap)
+            st = st.encode("utf-8")
+            v=self.ser.write(st)
+        else:
+            st = "D%2d;"%(gap)
+            st = st.encode("utf-8")    
+            v=self.ser.write(st)                    
 if __name__ == "__main__":        
     # test raw encoder data - old version
     # mind the potential time lag if read is not fast enough !
@@ -174,7 +211,7 @@ if __name__ == "__main__":
     encoddrv_old = EncoderIO(old=True)
     cnt = 0
     encoddrv_old.get_sync()
-    while cnt<1:
+    while cnt<3:
         sync,data_encoders = encoddrv_old.read_packet(debug=True)
         print (sync,data_encoders)
         if not sync:
@@ -185,11 +222,21 @@ if __name__ == "__main__":
     print ("new version")
     encoddrv = EncoderIO()
     cnt = 0
-    while cnt<10:
+    while cnt<3:
         # ask for last values
         data_encoders = encoddrv.get_last_value_v2()
-        print ()
+        print (data_encoders)
         cnt += 1
+
+    cnt = 0
+     while cnt<3:
+        # ask for last values
+        data_encoders0, data_encoders1 = encoddrv.get_last_value_v2()
+        print (data_encoders0)
+        print (data_encoders1)
+        print ()
+        time.sleep(1.0)
+        cnt += 1   
 
 
 
