@@ -25,11 +25,29 @@ class EncoderIO():
         self.voltRightFilt = 500.0
         self.a = 0.99
         self.sync = False
-        self.dev_tty = '/dev/ttyENC0'
+        # raw device : direct access to the device
+        # warning : data lags if not read fast enough !!! 
+        # to be compatible with old codes
+        self.dev_tty = '/dev/ttyENCRAW'
+        # advanced device : replicated on 3 ports /dev/ttyENC[0-2] 
+        # no more lags !
+        # send a command on the terminal
+        #   "C"  : return the last measured values (vector of 5 values) 
+        #             time,dir_left,dir_right,odo_left,odo_right
+        #   "P"  : return the last and the nth old values
+        #             time0,dir_left0,dir_right0,odo_left0,odo_right0
+        #             time1,dir_left1,dir_right1,odo_left1,odo_right1
+        #          this allows to compute the time and odo differences
+        #              delta_time = time0 - time1
+        #              delta_odo_left = odo_left0 - odo_left1
+        #              delta_odo_right = odo_right0 - odo_right1
+        #   "Dn;" or "Dnn;" : set the nth old value 1<n<n or 01<<nn<99
+        #          by default nn=20
+        self.dev_tty_v2 = '/dev/ttyENC0'
         if dev_tty == 1:
-            self.dev_tty = '/dev/ttyENC1'
+            self.dev_tty_v2 = '/dev/ttyENC1'
         if dev_tty == 2:
-            self.dev_tty = '/dev/ttyENC2'
+            self.dev_tty_v2 = '/dev/ttyENC2'
         self.init_line()
 
     def init_line(self,timeout=1.0):
@@ -42,6 +60,16 @@ class EncoderIO():
         st = os.system ("stty -F %s %d"%(self.dev_tty,self.baud_rate))
         print (st)
         st = os.system ("stty -F %s"%(self.dev_tty))
+        print (st)
+
+    def init_line_v2(self,timeout=1.0):
+        self.ser = serial.Serial(self.dev_tty_v2,self.baud_rate,timeout=timeout)
+
+    def set_baudrate_v2(self,baudrate=115200):
+        self.baud_rate = baudrate
+        st = os.system ("stty -F %s %d"%(self.dev_tty_v2,self.baud_rate))
+        print (st)
+        st = os.system ("stty -F %s"%(self.dev_tty_v2))
         print (st)
 
     def close_line(self):
@@ -133,13 +161,39 @@ class EncoderIO():
         posRight = data[4]
         return sync, timeAcq, sensLeft, sensRight, posLeft, posRight
 
+    # get last value on V2 device
+    def get_last_value_v2 ():
+        v=self.ser.write("C")
+        st=[]
+        st.append(self.ser.read(1))
+        while True:
+            ch = self.ser.read(1)
+            if cf == '\0':
+                break
+            else:
+                st.append(ch)
+        return st
+
+
+
 if __name__ == "__main__":
     encoddrv = EncoderIO()
         
-    while True:
-        encoddrv.get_sync()
-        while True:
-            sync,data_encoders = encoddrv.read_packet(debug=True)
-            if not sync:
-                break
+    # test raw encoder data (old version, mind the potentiel time lag if read is not fast enough !)
+    cnt = 0
+    encoddrv.get_sync()
+    while cnt<10:
+        sync,data_encoders = encoddrv.read_packet(debug=True)
+        print (sync,data_encoders)
+        if not sync:
+            break
+        cnt += 1
+
+    # test the new version
+    cnt = 0
+    while cnt<1:
+        data_encoders = encoddrv.get_last_value_v2()
+        print ()
+
+
 
