@@ -165,9 +165,9 @@ class EncoderIO():
     def get_last_value_v2 (self):
         v=self.ser.write(b'C')
         st=[]
-        st.append(self.ser.read(1))
         while True:
             ch = self.ser.read(1)
+            print (ch)
             if ch == '\0':
                 break
             else:
