@@ -181,9 +181,10 @@ class EncoderIO():
 if __name__ == "__main__":
     encoddrv = EncoderIO()
         
-    # test raw encoder data (old version, mind the potentiel time lag if read is not fast enough !)
+    # test raw encoder data - old version
+    # mind the potential time lag if read is not fast enough !
     print ("old version")
-     cnt = 0
+    cnt = 0
     encoddrv.get_sync()
     while cnt<1:
         sync,data_encoders = encoddrv.read_packet(debug=True)
@@ -196,6 +197,7 @@ if __name__ == "__main__":
     print ("new version")
     cnt = 0
     while cnt<10:
+        # ask for last values
         data_encoders = encoddrv.get_last_value_v2()
         print ()
         cnt += 1
