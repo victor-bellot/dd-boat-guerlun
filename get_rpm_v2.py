@@ -31,7 +31,7 @@ if __name__ == "__main__":
     ard = ardudrv.ArduinoIO()
     ard.send_arduino_cmd_motor (cmdl,cmdr)
     encoddrv = encdrv.EncoderIO()      
-    encoddrv.set_older_value_delay_v2(50)
+    encoddrv.set_older_value_delay_v2(50) # 50 measurements -> 5s (10 meas/s)
     t0 = time.time()
     while (time.time()-t0) < duration:
         t0loop = time.time()
