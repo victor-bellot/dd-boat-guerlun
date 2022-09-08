@@ -100,7 +100,7 @@ a file called tst.gpx has been created, rename it to save the data
 $ mv tst.gpx mynicetrack.gpx
 we can now destroy the session
 $ screen -X -S  sesgps quit
-
+```
 
 
 ## working with GPS
