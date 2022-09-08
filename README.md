@@ -25,10 +25,15 @@ Now we open another terminal on the ddboat:
 $ ssh ue32@172.20.25.207
 $ cd mywrk
 ```
-Now, the drivers are all tested using the tst_ddboat_v2.py python script :
+Now, the drivers can be tested. For each driver, a small test is provided in the **main** section. This allows both to test and to show how to use the sensors and the actuators. For example to test the temperature sensors :
 ```
-$ python3 tst_ddboat_v2.py
+$ python3 tc74_driver_v2.py
 ```
+or, to test the GPS :
+```
+$ python3 gps_driver_v2.py
+```
+When using the motors (arduino driver), **be careful and make sure the propellers can freely rotate !!**
 
 ## using the screen command to work outside of the WIFI Network
 
