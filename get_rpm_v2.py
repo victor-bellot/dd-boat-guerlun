@@ -4,7 +4,8 @@ import sys
 import time
 import numpy as np
 
-def delta_odo (odo1,odo0):
+
+def delta_odo(odo1, odo0):
     dodo = odo1-odo0
     if dodo > 32767:
         dodo -= 65536
@@ -25,13 +26,14 @@ if __name__ == "__main__":
     try:
         cmdr = int(sys.argv[2])
     except:
-        pass        
+        pass
+
     duration = 60.0
-    tloop = 5.0 # 0.2 Hz loop
+    tloop = 5.0  # 0.2 Hz loop
     ard = ardudrv.ArduinoIO()
     ard.send_arduino_cmd_motor (cmdl,cmdr)
     encoddrv = encdrv.EncoderIO()      
-    encoddrv.set_older_value_delay_v2(50) # 50 measurements -> 5s (10 meas/s)
+    encoddrv.set_older_value_delay_v2(50)  # 50 measurements -> 5s (10 meas/s)
     t0 = time.time()
     while (time.time()-t0) < duration:
         t0loop = time.time()

@@ -19,27 +19,6 @@ import struct
 # data = [timer,dirLeft,dirRight,encLeft,encRight,voltLeft,voltRight]
 
 
-def str5_to_values(str5):
-    return [int(s) for s in str5.split(',')]
-
-
-def extract_odo(values):  # odo_left and odo_right
-    return values[-2], values[-1]
-
-
-def delta_odo(odo1, odo0):
-    dodo = odo1 - odo0
-    if dodo > 32767:
-        dodo -= 65536
-    if dodo < -32767:
-        dodo += 65536
-    return dodo
-
-
-def new_old_to_rps(dt, new, old):
-    return 2 ** 13 / dt * np.sin((new - old) / 2 ** 16)
-
-
 class EncoderIO():
     def __init__(self, dev_tty=0, old=False):
         self.baud_rate = 115200
@@ -191,7 +170,7 @@ class EncoderIO():
             else:
                 st += ch
         # print(st)
-        return str5_to_values(st)
+        return st
 
     # get last value and older value on V2 device
     def get_last_and_older_values_v2 (self):
@@ -214,20 +193,7 @@ class EncoderIO():
             else:
                 st2 += ch
         # print (st2)
-        return str5_to_values(st1), str5_to_values(st2)
-
-    def get_rps(self, dt):
-        old = self.get_last_value_v2()
-        time.sleep(dt)
-        new = self.get_last_value_v2()
-
-        old_left, old_right = extract_odo(old)
-        new_left, new_right = extract_odo(new)
-
-        rps_left = new_old_to_rps(dt, new_left, old_left)
-        rps_right = new_old_to_rps(dt, new_right, old_right)
-
-        return rps_left, rps_right
+        return st1, st2
 
     # set the difference between last and older values on V2 device
     def set_older_value_delay_v2(self, gap):
