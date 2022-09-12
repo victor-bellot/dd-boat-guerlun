@@ -1,6 +1,7 @@
 import serial
 import os
 import time
+import numpy as np
 import struct
 
 # encoder frame
@@ -35,13 +36,21 @@ def delta_odo(odo1, odo0):
     return dodo
 
 
+def new_old_to_rps(dt, new, old):
+    return 2 ** 13 / dt * np.sin((new - old) / 2 ** 16)
+
+
 class EncoderIO():
-    def __init__(self,dev_tty=0,old=False):
+    def __init__(self, dev_tty=0, old=False):
         self.baud_rate = 115200
         self.voltLeftFilt = 500.0
         self.voltRightFilt = 500.0
         self.a = 0.99
         self.sync = False
+
+        self.buffer_length = 2
+        self.buffer = []
+
         # raw device : direct access to the device
         # warning : data lags if not read fast enough !!! 
         # to be compatible with old codes
@@ -74,12 +83,12 @@ class EncoderIO():
 
     # in principle , no need to use this function , baudrate is normally 115200 with
     # the current software version
-    def set_baudrate(self,baudrate=115200):
+    def set_baudrate(self, baudrate=115200):
         self.baud_rate = baudrate
-        st = os.system ("stty -F %s %d"%(self.dev_tty,self.baud_rate))
-        print (st)
-        st = os.system ("stty -F %s"%(self.dev_tty))
-        print (st)
+        st = os.system ("stty -F %s %d" % (self.dev_tty, self.baud_rate))
+        print(st)
+        st = os.system ("stty -F %s" % self.dev_tty)
+        print(st)
 
     def close_line(self):
         self.ser.close()
@@ -186,20 +195,20 @@ class EncoderIO():
 
     # get last value and older value on V2 device
     def get_last_and_older_values_v2 (self):
-        v=self.ser.write(b'P')
-        st1=""
+        v = self.ser.write(b'P')
+        st1 = ""
         while True:
             ch = self.ser.read().decode("utf-8")
-            #print (ch)
+            # print (ch)
             if ch == '\n':
                 break
             else:
                 st1 += ch
         # print (st1)
-        st2=""
+        st2 = ""
         while True:
             ch = self.ser.read().decode("utf-8")
-            #print (ch)
+            # print (ch)
             if ch == '\n':
                 break
             else:
@@ -207,7 +216,7 @@ class EncoderIO():
         # print (st2)
         return str5_to_values(st1), str5_to_values(st2)
 
-    def get_odo_delta(self, dt):
+    def get_rps(self, dt):
         old = self.get_last_value_v2()
         time.sleep(dt)
         new = self.get_last_value_v2()
@@ -215,25 +224,25 @@ class EncoderIO():
         old_left, old_right = extract_odo(old)
         new_left, new_right = extract_odo(new)
 
-        delta_left = delta_odo(new_left, old_left)
-        delta_right = delta_odo(new_right, old_right)
+        rps_left = new_old_to_rps(dt, new_left, old_left)
+        rps_right = new_old_to_rps(dt, new_right, old_right)
 
-        return delta_left, delta_right
+        return rps_left, rps_right
 
     # set the difference between last and older values on V2 device
-    def set_older_value_delay_v2 (self,gap):
+    def set_older_value_delay_v2(self, gap):
         if gap < 1:
             gap = 1
         if gap > 99:
             gap = 99
         if gap < 10:
-            st = "D%1d;"%(gap)
+            st = "D%1d;" % gap
             st = st.encode("utf-8")
-            v=self.ser.write(st)
+            v = self.ser.write(st)
         else:
-            st = "D%2d;"%(gap)
+            st = "D%2d;" % gap
             st = st.encode("utf-8")    
-            v=self.ser.write(st)  
+            v = self.ser.write(st)
         # wait 1s 
         time.sleep(1.0)
 
