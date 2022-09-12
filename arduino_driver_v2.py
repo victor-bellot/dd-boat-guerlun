@@ -3,6 +3,7 @@ import time
 import signal
 import sys
 
+
 class ArduinoIO():
     def __init__(self):
         self.arduino = None
@@ -107,6 +108,7 @@ class ArduinoIO():
                 print ("get_arduino_status timeout",timeout)
                 break
         return data
+
 
 if __name__ == "__main__":
     ard = ArduinoIO()

@@ -2,10 +2,36 @@ import struct
 import time
 import sys
 import math
+
+import numpy as np
 import i2creal as i2c  # currently only real I2C on ddboats (no simulated I2C)
 
 # LIS3DML 0x1e  (mag sensor)
 # LSM6    0x6b  (accelero - gyro)
+
+beta = 46
+
+x1 = np.array([[-4620],
+               [-1186],
+               [+260]])
+
+x_1 = np.array([[+1690],
+               [-385],
+               [+770]])
+
+x2 = np.array([[-990],
+               [-3880],
+               [+860]])
+
+x3 = np.array([[-1135],
+               [-1127],
+               [-2614]])
+
+
+b = (-1/2) * (x1 + x_1)
+A = np.hstack((x1 + b, x2 + b, x3 + b)) / beta
+A_1 = np.linalg.inv(A)
+
 
 class Imu9IO():
     def __init__(self):
@@ -84,7 +110,7 @@ class Imu9IO():
             self.__dev_i2c_ag.write(0x17,[0x80])
             self.__dev_i2c_ag.write(0x13,[0x80])
             self.__dev_i2c_ag.write(0x10,[0x8F])
-                    
+
     def read_mag_raw(self):
         v = self.__dev_i2c_mg.read(0x28,6)
         ix = self.cmpl2(v[0],v[1])
@@ -153,11 +179,21 @@ class Imu9IO():
         if heading < 0.0:
             heading += 360.0
         return heading
-    
-                    
+
+    def correction_mag(self):
+        x = np.array(self.read_mag_raw()).reshape(-1, 1)
+        y = A_1 @ (x + b)
+        return y
+
+    def orientation(self):
+        mag = self.correction_mag()
+        x, y, _ = mag.flatten()
+        return np.arctan2(y, x)
+
+
 if __name__ == "__main__":
     imu = Imu9IO()
-    for i in range(200):
-        print (imu.read_mag_raw(),imu.read_accel_raw(),imu.read_gyro_raw())
-        time.sleep(0.01)
 
+    for i in range(200):
+        print(imu.read_mag_raw(), imu.read_accel_raw(), imu.read_gyro_raw())
+        time.sleep(0.01)

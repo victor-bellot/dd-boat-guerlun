@@ -18,6 +18,23 @@ import struct
 # data = [timer,dirLeft,dirRight,encLeft,encRight,voltLeft,voltRight]
 
 
+def str5_to_values(str5):
+    return [int(s) for s in str5.split(',')]
+
+
+def extract_odo(values):  # odo_left and odo_right
+    return values[-2], values[-1]
+
+
+def delta_odo(odo1, odo0):
+    dodo = odo1 - odo0
+    if dodo > 32767:
+        dodo -= 65536
+    if dodo < -32767:
+        dodo += 65536
+    return dodo
+
+
 class EncoderIO():
     def __init__(self,dev_tty=0,old=False):
         self.baud_rate = 115200
@@ -159,13 +176,13 @@ class EncoderIO():
         st=""
         while True:
             ch = self.ser.read().decode("utf-8")
-            #print (ch)
+            # print(ch)
             if ch == '\n':
                 break
             else:
                 st += ch
-        print (st)
-        return st
+        # print(st)
+        return str5_to_values(st)
 
     # get last value and older value on V2 device
     def get_last_and_older_values_v2 (self):
@@ -178,7 +195,7 @@ class EncoderIO():
                 break
             else:
                 st1 += ch
-        print (st1)
+        # print (st1)
         st2=""
         while True:
             ch = self.ser.read().decode("utf-8")
@@ -187,8 +204,21 @@ class EncoderIO():
                 break
             else:
                 st2 += ch
-        print (st2)
-        return st1,st2
+        # print (st2)
+        return str5_to_values(st1), str5_to_values(st2)
+
+    def get_odo_delta(self, dt):
+        old = self.get_last_value_v2()
+        time.sleep(dt)
+        new = self.get_last_value_v2()
+
+        old_left, old_right = extract_odo(old)
+        new_left, new_right = extract_odo(new)
+
+        delta_left = delta_odo(new_left, old_left)
+        delta_right = delta_odo(new_right, old_right)
+
+        return delta_left, delta_right
 
     # set the difference between last and older values on V2 device
     def set_older_value_delay_v2 (self,gap):
@@ -205,7 +235,9 @@ class EncoderIO():
             st = st.encode("utf-8")    
             v=self.ser.write(st)  
         # wait 1s 
-        time.sleep(1.0)                
+        time.sleep(1.0)
+
+
 if __name__ == "__main__":        
     # test raw encoder data - old version
     # mind the potential time lag if read is not fast enough !
