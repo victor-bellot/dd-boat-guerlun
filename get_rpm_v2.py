@@ -17,23 +17,27 @@ def delta_odo(odo1, odo0):
 if __name__ == "__main__":
     
     timeout = 1.0
-    cmdl = 50
-    cmdr = 50
+    cmdl, cmdr = 50, 50
+
+    # try:
+    #     cmdl = int(sys.argv[1])
+    # except:
+    #     pass
+    # try:
+    #     cmdr = int(sys.argv[2])
+    # except:
+    #     pass
+
     try:
-        cmdl = int(sys.argv[1])
+        tloop = int(sys.argv[1])
     except:
-        pass
-    try:
-        cmdr = int(sys.argv[2])
-    except:
-        pass
+        tloop = 5.0  # 0.2 Hz loop
 
     duration = 60.0
-    tloop = 5.0  # 0.2 Hz loop
     ard = ardudrv.ArduinoIO()
     ard.send_arduino_cmd_motor (cmdl,cmdr)
     encoddrv = encdrv.EncoderIO()      
-    encoddrv.set_older_value_delay_v2(50)  # 50 measurements -> 5s (10 meas/s)
+    encoddrv.set_older_value_delay_v2(10*tloop)  # 50 measurements -> 5s (10 meas/s)
     t0 = time.time()
     while (time.time()-t0) < duration:
         t0loop = time.time()

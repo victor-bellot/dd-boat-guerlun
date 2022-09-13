@@ -20,7 +20,7 @@ if __name__ == "__main__":
     arduino.send_arduino_cmd_motor(cmdl, cmdr)
 
     for _ in range(10):
-        delta_odo_left, delta_odo_right = encoder.get_odo_delta(dt)
+        delta_odo_left, delta_odo_right = encoder.get_last_and_older_values_v2()
         print("Delta odo left:", delta_odo_left)
         print("Delta odo right:", delta_odo_right)
 

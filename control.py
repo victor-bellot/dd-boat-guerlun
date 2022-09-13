@@ -2,9 +2,31 @@ import sys
 import time
 import math
 import numpy as np
-from imu9_driver_v2 import Imu9IO
+from imu9_driver_v3 import Imu9IO
+from tc74_driver_v2 import TempTC74IO
 from arduino_driver_v2 import ArduinoIO
 from encoders_driver_v2 import EncoderIO
+
+
+data_keys = ['time', 'd_phi', 'rpm_l', 'rpm_r', 'rpm_lb', 'rpm_rb', 'th_l', 'th_r']
+
+
+def data_to_str(data):
+    str_inf = ""
+    for k, v in zip(data_keys, data):
+        str_inf += k + ': ' + str(int(v)) + ' ; '
+    return str_inf[:-3] + '\n'
+
+
+def cap_to_phi(cap):
+    if cap == 'S':
+        return np.pi
+    elif cap == 'W':
+        return np.pi / 2
+    elif cap == 'E':
+        return -np.pi / 2
+    else:
+        return 0.0
 
 
 def delta_odo(odo1, odo0):
@@ -21,21 +43,25 @@ def sawtooth(x):
 
 
 class Control:
-    def __init__(self, dt=0.5, measurement_per_dt=10):
+    def __init__(self, dt=0.5):
         self.ard = ArduinoIO()
         self.enc = EncoderIO()
         self.imu = Imu9IO()
+        self.tpr = TempTC74IO()
 
         self.dt = dt
-        self.enc.set_older_value_delay_v2(int(dt * measurement_per_dt))
+        # set delay between old and new measures : HERE=dt
+        self.enc.set_older_value_delay_v2(int(dt*10))
+        self.tpr.set_config(0x0, 0x0)
+        self.tpr.set_mode(standby=True, side="both")
 
         self.cst = {'left': {'kp': 0.01, 'ki': 0.01},
                     'right': {'kp': 0.01, 'ki': 0.01},
-                    'cap': 300}
+                    'cap': 300, 'k_phi': (3 / 4) / np.pi}
 
         self.step_max = 50
-        self.u_max = 150
-        self.rpm_max = 10000
+        self.u_max = 100
+        self.rpm_max = 4000
 
         self.ei_left, self.ei_right = 0, 0
         self.cmd_left, self.cmd_right = 50, 50
@@ -44,9 +70,9 @@ class Control:
         self.ei_left, self.ei_right = 0, 0
         self.cmd_left, self.cmd_right = cmd_left_init, cmd_right_init
 
-    def change_timing(self, dt, measurement_per_dt):
+    def change_timing(self, dt):
         self.dt = dt
-        self.enc.set_older_value_delay_v2(int(dt * measurement_per_dt))
+        self.enc.set_older_value_delay_v2(int(dt * 10))
 
     def get_current_cap(self):
         return self.imu.orientation()
@@ -90,54 +116,91 @@ class Control:
         if abs(step_right) > self.step_max:
             step_right = self.step_max * step_right / abs(step_right)
 
-        self.cmd_left = min(self.u_max, self.cmd_left + step_left)
-        self.cmd_right = min(self.u_max, self.cmd_right + step_right)
-
-        print(rpm_left, rpm_right, step_left, step_right, self.cmd_left, self.cmd_right)
+        self.cmd_left = max(min(self.u_max, self.cmd_left + step_left), 0)
+        self.cmd_right = max(min(self.u_max, self.cmd_right + step_right), 0)
 
         self.ard.send_arduino_cmd_motor(self.cmd_left, self.cmd_right)
 
-    def regulation_cap_and_speed(self, cap, speed_rpm):
-        current_cap = self.get_current_cap()
-        delta = self.cst['cap'] * sawtooth(cap - current_cap)
-        print('DELTA CAP:', delta)
-        rpm_left = max(min(speed_rpm - delta, self.rpm_max), 0)
-        rpm_right = max(min(speed_rpm + delta, self.rpm_max), 0)
+        print('MEASURED RPM:', rpm_left, rpm_right)
         return rpm_left, rpm_right
 
-    def suivi_cap(self,phi_bar, rpm_max):
-        K3 = rpm_max / (2 * np.pi)
-        phi = self.get_current_cap()
-        ec_angle = K3 * sawtooth(phi_bar - phi)
+    def regulation_cap_and_speed(self, delta_phi, speed_rpm):
+        delta_spd = self.cst['cap'] * delta_phi
+        rpm_left = max(min(speed_rpm - delta_spd, self.rpm_max), 0)
+        rpm_right = max(min(speed_rpm + delta_spd, self.rpm_max), 0)
+
+        print('DELTA SPD:', delta_spd)
+        return rpm_left, rpm_right
+
+    def leo_cap_and_speed(self, delta_phi, rpm_max):
+        # TO DO : add an integration component
+        # and rename ec_angle he he!
+        ec_angle = self.cst['k_phi'] * rpm_max * delta_phi
+
         if ec_angle >= 0:
             rpm_left_bar = rpm_max - ec_angle
             rpm_right_bar = rpm_max
         else:
             rpm_right_bar = rpm_max + ec_angle
             rpm_left_bar = rpm_max
-        print(ec_angle,rpm_left_bar, rpm_right_bar)
+
+        print('RPM BAR:', rpm_left_bar, rpm_right_bar)
         return rpm_left_bar, rpm_right_bar
 
-    def run(self, duration, cap=0.0, speed_rpm=3000):
+    def run(self, duration, cap='N', speed_rpm=3000, mission_name='log'):
+        file = open(mission_name + '.txt', 'a')
+        file.write('duration: ' + str(duration) + ' ; ' + 'cap: ' + cap + ' ; spd: ' + str(speed_rpm) + '\n')
+
+        self.reset()
         t0 = time.time()
         while (time.time() - t0) < duration:
             t0loop = time.time()
 
-            rpm_left_bar, rpm_right_bar = self.suivi_cap(cap, speed_rpm)
-            self.regulation_rpm(rpm_left_bar, rpm_right_bar)
+            phi = self.get_current_cap()
+            delta_phi = sawtooth(cap_to_phi(cap) - phi)
+
+            rpm_left_bar, rpm_right_bar = self.leo_cap_and_speed(delta_phi, speed_rpm)
+            rpm_left, rpm_right = self.regulation_rpm(rpm_left_bar, rpm_right_bar)
+
+            temp_left, temp_right = self.tpr.read_temp()
+            data = [(t0loop - t0) * 1000, delta_phi * (180 / np.pi), rpm_left, rpm_right,
+                    rpm_left_bar, rpm_right_bar, temp_left, temp_right]
+            information = data_to_str(data)
+            file.write(information)
 
             while (time.time() - t0loop) < self.dt:
                 time.sleep(0.001)
 
         self.ard.send_arduino_cmd_motor(0, 0)
-
+        file.close()
 
 
 if __name__ == '__main__':
+    # Chose a duration
     try:
-        duration = int(sys.argv[1])
+        d = int(sys.argv[1])
     except:
-        duration = math.inf
+        d = math.inf
+
+    # Chose a cap
+    try:
+        c = str(sys.argv[2])
+    except:
+        c = 'N'
+
+    # Chose a speed
+    try:
+        s = int(sys.argv[3])
+    except:
+        s = 3000
 
     ctr = Control()
-    ctr.run(duration)
+
+    if d < 0:
+        d = abs(d)
+        ctr.run(d, speed_rpm=s, cap='N')
+        ctr.run(d, speed_rpm=s, cap='W')
+        ctr.run(d, speed_rpm=s, cap='S')
+        ctr.run(d, speed_rpm=s, cap='E')
+    else:
+        ctr.run(d, speed_rpm=s, cap=c)

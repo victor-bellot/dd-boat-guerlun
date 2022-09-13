@@ -1,4 +1,3 @@
-
 import struct
 import time
 import sys
@@ -93,7 +92,7 @@ if __name__ == "__main__":
         st += " 0x%2.2x"%(cfg_right)
     else:
         st += " None"        
-    print (st)
+    print(st)
 
     time.sleep(1.0)
 
