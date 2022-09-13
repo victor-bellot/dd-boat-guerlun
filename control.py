@@ -7,7 +7,6 @@ from tc74_driver_v2 import TempTC74IO
 from arduino_driver_v2 import ArduinoIO
 from encoders_driver_v2 import EncoderIO
 
-
 data_keys = ['time', 'd_phi', 'rpm_l', 'rpm_r', 'rpm_lb', 'rpm_rb', 'th_l', 'th_r']
 
 
@@ -39,7 +38,7 @@ def delta_odo(odo1, odo0):
 
 
 def sawtooth(x):
-    return (x+np.pi) % (2*np.pi) - np.pi
+    return (x + np.pi) % (2 * np.pi) - np.pi
 
 
 class Control:
@@ -51,19 +50,20 @@ class Control:
 
         self.dt = dt
         # set delay between old and new measures : HERE=dt
-        self.enc.set_older_value_delay_v2(int(dt*10))
+        self.enc.set_older_value_delay_v2(int(dt * 10))
         self.tpr.set_config(0x0, 0x0)
         self.tpr.set_mode(standby=True, side="both")
 
         self.cst = {'left': {'kp': 0.01, 'ki': 0.01},
                     'right': {'kp': 0.01, 'ki': 0.01},
-                    'cap': 300, 'k_phi': (3 / 4) / np.pi}
+                    'cap': 300, 'k_phi_p': (3 / 4) / np.pi, 'k_phi_i': (3/20)/np.pi}
 
         self.step_max = 50
         self.u_max = 100
         self.rpm_max = 4000
 
         self.ei_left, self.ei_right = 0, 0
+        self.ei_phi = 0
         self.cmd_left, self.cmd_right = 50, 50
 
     def reset(self, cmd_left_init=50, cmd_right_init=50):
@@ -133,15 +133,15 @@ class Control:
         return rpm_left, rpm_right
 
     def leo_cap_and_speed(self, delta_phi, rpm_max):
-        # TO DO : add an integration component
-        # and rename ec_angle he he!
-        ec_angle = self.cst['k_phi'] * rpm_max * delta_phi
 
-        if ec_angle >= 0:
-            rpm_left_bar = rpm_max - ec_angle
+        self.ei_phi += delta_phi * self.dt
+        e_phi = self.cst['k_phi_p'] * delta_phi + self.cst['k_phi_i'] * self.ei_phi
+
+        if e_phi >= 0:
+            rpm_left_bar = rpm_max - e_phi * rpm_max
             rpm_right_bar = rpm_max
         else:
-            rpm_right_bar = rpm_max + ec_angle
+            rpm_right_bar = rpm_max + e_phi * rpm_max
             rpm_left_bar = rpm_max
 
         print('RPM BAR:', rpm_left_bar, rpm_right_bar)
