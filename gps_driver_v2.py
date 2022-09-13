@@ -6,6 +6,7 @@ import time
 # https://www.nmea.org/content/STANDARDS/NMEA_0183_Standard
 # https://en.wikipedia.org/wiki/NMEA_0183
 
+
 class GpsIO:
     def __init__(self, tty_dev=0):
         # default device for GPS sensor serial line is /dev/ttyGPS0 with tty_dev=0
@@ -34,7 +35,6 @@ class GpsIO:
     def close(self):
         self.ser.close()
 
-        
     def read_next_message(self):
         v=self.ser.readline().decode("utf-8")
         #print (v)
@@ -106,7 +106,6 @@ class GpsIO:
         rcv = self.get_mtk_status ()
         return rcv
 
-
     # read the position in the GPGLL message
     # by default one GPGLL message is expected every 20 messages
     # warning: blocking function, not to use in control loops 
@@ -167,14 +166,14 @@ if __name__ == "__main__":
     gps = GpsIO()
 
     # display the 20 first messages
-    #for i in range(20):
+    # for i in range(20):
     #    print (gps.read_next_message())
 
     # display the 20 positions (GPGLL) messages
-    #for i in range(20):
+    # for i in range(20):
     #    print (gps.read_gll())
 
-    #print (gps.compute_checksum("PMTK605"))
+    # print (gps.compute_checksum("PMTK605"))
     gps.set_filter_speed("0.4")
     gps.get_filter_speed()
     gps.set_filter_speed("0")
