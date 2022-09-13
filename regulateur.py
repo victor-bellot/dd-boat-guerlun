@@ -33,18 +33,18 @@ def get_rpm(enc, dt):
     return rpm_left, rpm_right
 
 
-def regul(rpm_left_bar, rpm_right_bar, dt=1.0, cmd_left_init=50, cmd_right_init=50):
+def regul(rpm_left_bar, rpm_right_bar, dt=0.5, cmd_left_init=50, cmd_right_init=50):
     ard = arduino_driver_v2.ArduinoIO()
     enc = encoders_driver_v2.EncoderIO()
 
-    kp_left, ki_left = 1, 0.01
-    kp_right, ki_right = 1, 0.01
+    kp_left, ki_left = 0.01, 0.01
+    kp_right, ki_right = 0.01, 0.01
 
     ei_left, ei_right = 0, 0
     cmd_left, cmd_right = cmd_left_init, cmd_right_init
 
     ard.send_arduino_cmd_motor(cmd_left, cmd_right)
-    enc.set_older_value_delay_v2(10)  # number of measurement during dt
+    enc.set_older_value_delay_v2(int(dt*10))  # number of measurement during dt
 
     t0 = time.time()
     while (time.time() - t0) < duration:
@@ -52,16 +52,14 @@ def regul(rpm_left_bar, rpm_right_bar, dt=1.0, cmd_left_init=50, cmd_right_init=
         rpm_left, rpm_right = get_rpm(enc, dt)
 
         # left motor
-        e_left = rpm_left_bar - (-rpm_left)
+        e_left = rpm_left_bar - rpm_left
         ei_left += e_left * dt
         u_left = kp_left * e_left + ki_left * ei_left
 
         # right motor
-        e_right = rpm_right_bar - rpm_right
+        e_right = rpm_right_bar - (-rpm_right)
         ei_right += e_right * dt
         u_right = kp_right * e_right + ki_right * ei_right
-
-        print(rpm_left, rpm_right, u_left, u_right)
 
         # On seuil la variation en tension
         if abs(u_left) > 60:
@@ -69,8 +67,10 @@ def regul(rpm_left_bar, rpm_right_bar, dt=1.0, cmd_left_init=50, cmd_right_init=
         if abs(u_right) > 60:
             u_right = 60 * u_right/abs(u_right)
 
-        cmd_left += u_left
-        cmd_right += u_right
+        cmd_left = min(150, cmd_left + u_left)
+        cmd_right = min(150, cmd_right + u_right)
+
+        print(rpm_left, rpm_right, u_left, u_right, cmd_left, cmd_right)
 
         ard.send_arduino_cmd_motor(cmd_left, cmd_right)
 
@@ -86,4 +86,4 @@ if __name__ == '__main__':
     except:
         duration = math.inf
 
-    regul(rpm_left_bar=10000, rpm_right_bar=10000)
+    regul(rpm_left_bar=4000, rpm_right_bar=4000)

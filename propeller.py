@@ -1,6 +1,5 @@
 import sys
 import time
-
 from arduino_driver_v2 import ArduinoIO
 from encoders_driver_v2 import EncoderIO
 
