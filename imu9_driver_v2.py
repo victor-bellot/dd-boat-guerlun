@@ -144,7 +144,8 @@ class Imu9IO():
         return i
 
     def heading_raw(self,magx,magy):
-        return math.atan2(magy,magx)
+        heading = math.atan2(magy,magx)
+        return heading
         
     def heading_raw_deg(self,magx,magy):
         heading = self.heading_raw(magx,magy)*180.0/math.pi
@@ -165,14 +166,14 @@ class Imu9IO():
     def heading(self,magx,magy):
         magx_cal = (magx - self.magx_offs) * self.magx_scale
         magy_cal = (magy - self.magy_offs) * self.magy_scale
-        # print (self.magx_min,magx,self.magx_max,self.magy_min,magy,self.magy_max,magx_cal,magy_cal)
+        #print (self.magx_min,magx,self.magx_max,self.magy_min,magy,self.magy_max,magx_cal,magy_cal)
         magx_cal = 1.0 if magx_cal>1.0 else magx_cal
         magx_cal = -1.0 if magx_cal<-1.0 else magx_cal
         magy_cal = 1.0 if magy_cal>1.0 else magy_cal
         magy_cal = -1.0 if magy_cal<-1.0 else magy_cal
         heading = math.atan2(magy_cal,magx_cal)
         return heading
-
+        
     def heading_deg(self,magx,magy):
         heading = self.heading(magx,magy)*180.0/math.pi
         if heading < 0.0:
@@ -187,7 +188,7 @@ class Imu9IO():
     def orientation(self):
         mag = self.correction_mag()
         x, y, _ = mag.flatten()
-        return self.heading_raw(x, y)
+        return np.arctan2(y, x)
 
 
 if __name__ == "__main__":

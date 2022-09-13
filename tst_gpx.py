@@ -22,7 +22,7 @@ def cvt_gll_ddmm_2_dd (st):
 
 gps = gpsdrv.GpsIO()
 # debug with USB GPS
-# gps.init_line_devname_baudrate("/dev/ttyUSB0",9600)
+#gps.init_line_devname_baudrate("/dev/ttyUSB0",9600)
 
 # open gpx buffer
 gpx = gpxpy.gpx.GPX()
@@ -33,27 +33,25 @@ gpx.tracks.append(gpx_track)
 gpx_segment = gpxpy.gpx.GPXTrackSegment()
 gpx_track.segments.append(gpx_segment)
 
-tmax = 10*60.0  # 10 minutes max (can be stopped before the end with Ctrl+C)
+tmax = 10*60.0 # 10 minutes max (can be stopped before the end with Ctrl+C)
 t0 = time.time()
 while True:
-    print("---------------------------------------------------")
+    print ("---------------------------------------------------")
 
     # test GPS
     gps_data_string = gps.read_gll()
-    print("GPS:",gps_data_string)
-
-    if gps_data_string[0] > 0.0:
-        lat,lon = cvt_gll_ddmm_2_dd (gps_data_string)
-        print(lat,lon)
-
-        gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(lat, lon))
-    else:
-        print("No data available :'(")
+    print ("GPS:",gps_data_string)
+    if gps_data_string[0] == 0.0:
+        break
+    lat,lon = cvt_gll_ddmm_2_dd (gps_data_string)
+    print (lat,lon)
+    
+    gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(lat, lon))
 
     if (time.time()-t0) > tmax:
         break
 
-fp = open("second_race.gpx","w")
+fp = open("tst.gpx","w")
 fp.write(gpx.to_xml())
 fp.write("\n")
 fp.close()

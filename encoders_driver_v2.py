@@ -41,7 +41,7 @@ class EncoderIO():
         #   "C"  : return the last measured values (vector of 5 values) 
         #             time,dir_left,dir_right,odo_left,odo_right
         #   "P"  : return the last and the nth old values
-        #             time0,dir_left0,dir_right0,odo_left0,odo_right0
+        #             time0,dir_left0,dir_right0,odo_ left0,odo_right0
         #             time1,dir_left1,dir_right1,odo_left1,odo_right1
         #          this allows to compute the time and odo differences
         #              delta_time = time0 - time1
