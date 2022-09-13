@@ -68,6 +68,7 @@ class Control:
 
     def reset(self, cmd_left_init=50, cmd_right_init=50):
         self.ei_left, self.ei_right = 0, 0
+        self.ei_phi=0
         self.cmd_left, self.cmd_right = cmd_left_init, cmd_right_init
 
     def change_timing(self, dt):
@@ -124,7 +125,7 @@ class Control:
         print('MEASURED RPM:', rpm_left, rpm_right)
         return rpm_left, rpm_right
 
-    def regulation_cap_and_speed(self, delta_phi, speed_rpm):
+    def regulation_cap_and_speed(self, delta_phi, speed_rpm): #supprimable (ainsi que self.cst['cap'])
         delta_spd = self.cst['cap'] * delta_phi
         rpm_left = max(min(speed_rpm - delta_spd, self.rpm_max), 0)
         rpm_right = max(min(speed_rpm + delta_spd, self.rpm_max), 0)
