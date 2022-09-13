@@ -1,6 +1,5 @@
 import sys
 import time
-
 import numpy as np
 from imu9_driver_v2 import Imu9IO
 
