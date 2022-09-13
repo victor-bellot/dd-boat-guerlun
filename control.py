@@ -113,8 +113,9 @@ class Control:
             rpm_left_bar = rpm_max - ec_angle
             rpm_right_bar = rpm_max
         else:
-            rpm_right_bar = rpm_max - ec_angle
+            rpm_right_bar = rpm_max + ec_angle
             rpm_left_bar = rpm_max
+        print(ec_angle,rpm_left_bar, rpm_right_bar)
         return rpm_left_bar, rpm_right_bar
 
     def run(self, duration, cap=0.0, speed_rpm=3000):
@@ -122,7 +123,7 @@ class Control:
         while (time.time() - t0) < duration:
             t0loop = time.time()
 
-            rpm_left_bar, rpm_right_bar = self.regulation_cap_and_speed(cap, speed_rpm)
+            rpm_left_bar, rpm_right_bar = self.suivi_cap(cap, speed_rpm)
             self.regulation_rpm(rpm_left_bar, rpm_right_bar)
 
             while (time.time() - t0loop) < self.dt:
