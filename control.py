@@ -105,6 +105,18 @@ class Control:
         rpm_right = max(min(speed_rpm + delta, self.rpm_max), 0)
         return rpm_left, rpm_right
 
+    def suivi_cap(self,phi_bar, rpm_max):
+        K3 = rpm_max / (2 * np.pi)
+        phi = self.get_current_cap()
+        ec_angle = K3 * sawtooth(phi_bar - phi)
+        if ec_angle >= 0:
+            rpm_left_bar = rpm_max - ec_angle
+            rpm_right_bar = rpm_max
+        else:
+            rpm_right_bar = rpm_max - ec_angle
+            rpm_left_bar = rpm_max
+        return rpm_left_bar, rpm_right_bar
+
     def run(self, duration, cap=0.0, speed_rpm=3000):
         t0 = time.time()
         while (time.time() - t0) < duration:
@@ -117,6 +129,7 @@ class Control:
                 time.sleep(0.001)
 
         self.ard.send_arduino_cmd_motor(0, 0)
+
 
 
 if __name__ == '__main__':

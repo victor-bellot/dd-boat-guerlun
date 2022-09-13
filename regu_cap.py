@@ -10,14 +10,4 @@ def sawtooth(x):
     # rpm_right_bar=rpm-rpm_left_bar
     # rpm_right_bar-rpm_left_bar=K3*sawtooth(phi_bar-phi)
 
-def suivi_cap(phi_bar, rpm_max=8000):
-    K3 = rpm_max / (2 * np.pi)
-    phi = imu.orientation() * (180 / np.pi)
-    ec_ang = K3 * sawtooth(phi_bar - phi)
-    if ec_angle >= 0:
-        rpm_left_bar = rpm_max - ec_ang
-        rpm_right_bar = rpm_max - rpm_right_bar
-    else:
-        rpm_right_bar = rpm_max - ec_ang
-        rpm_left_bar = rpm_max - rpm_left_bar
-    return rpm_left_bar, rpm_right_bar
+
