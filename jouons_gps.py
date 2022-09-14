@@ -10,8 +10,8 @@ from gps_driver_v2 import GpsIO
 
 
 def get_pos(lx, ly, r):
-    x = r * math.cos(ly) * (lx - lx_hat)
-    y = r * (ly - ly_hat)
+    x = r * math.cos(ly) * (lx - lx_ponton)
+    y = r * (ly - ly_ponton)
     return x, y
 
 def cap_gps(pos_a, pos_b, pos_boat):
