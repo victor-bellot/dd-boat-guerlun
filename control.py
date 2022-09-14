@@ -56,14 +56,13 @@ class Control:
 
         self.cst = {'left': {'kp': 0.01, 'ki': 0.01},
                     'right': {'kp': 0.01, 'ki': 0.01},
-                    'phi': {'kp': (3/4) / np.pi, 'ki': (3/20) / np.pi}}
+                    'phi': {'kp': (3/4) / np.pi, 'ki': 8e-3 / np.pi}}
 
         self.step_max = 50
         self.u_max = 100
         self.rpm_max = 4000
 
-        self.ei_left, self.ei_right = 0, 0
-        self.ei_phi = 0
+        self.ei_left, self.ei_right, self.ei_phi = 0, 0, 0
         self.cmd_left, self.cmd_right = 50, 50
 
     def reset(self, cmd_left_init=50, cmd_right_init=50):
@@ -121,12 +120,14 @@ class Control:
 
         self.ard.send_arduino_cmd_motor(self.cmd_left, self.cmd_right)
 
-        print('MEASURED RPM:', rpm_left, rpm_right)
+        # print('MEASURED RPM:', rpm_left, rpm_right)
         return rpm_left, rpm_right
 
     def leo_cap_and_speed(self, delta_phi, rpm_max):
         self.ei_phi += delta_phi * self.dt
         e_phi = self.cst['phi']['kp'] * delta_phi + self.cst['phi']['ki'] * self.ei_phi
+
+        print("e_phi components: ", self.cst['phi']['kp'] * delta_phi, self.cst['phi']['ki'] * self.ei_phi)
 
         if e_phi >= 0:
             rpm_left_bar = rpm_max - e_phi * rpm_max
@@ -135,7 +136,7 @@ class Control:
             rpm_right_bar = rpm_max + e_phi * rpm_max
             rpm_left_bar = rpm_max
 
-        print('RPM BAR:', rpm_left_bar, rpm_right_bar)
+        # print('RPM BAR:', rpm_left_bar, rpm_right_bar)
         return rpm_left_bar, rpm_right_bar
 
     def run(self, duration, cap='N', speed_rpm=3000, mission_name='log'):
@@ -149,6 +150,7 @@ class Control:
 
             phi = self.get_current_cap()
             delta_phi = sawtooth(cap_to_phi(cap) - phi)
+            print("DELTA PHI: ", int(delta_phi * (180 / np.pi)))
 
             rpm_left_bar, rpm_right_bar = self.leo_cap_and_speed(delta_phi, speed_rpm)
             rpm_left, rpm_right = self.regulation_rpm(rpm_left_bar, rpm_right_bar)
@@ -164,6 +166,7 @@ class Control:
 
         self.ard.send_arduino_cmd_motor(0, 0)
         file.close()
+
 
 
 if __name__ == '__main__':

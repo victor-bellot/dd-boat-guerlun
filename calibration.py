@@ -3,23 +3,37 @@ import time
 import numpy as np
 from imu9_driver_v3 import Imu9IO
 
+labels = ['x1', 'x_1', 'x2', 'x3']
+
+
+def get_time():
+    lt = time.localtime()
+    return "%i-%i-%i" % (lt.tm_mday, lt.tm_hour, lt.tm_min)
+
 
 if __name__ == "__main__":
     try:
-        correction = int(sys.argv[1])
+        n = int(sys.argv[1])
     except:
-        correction = None
+        n = -1
 
     imu = Imu9IO()
 
-    if correction:
+    if n < 0:
         while True:
             print(imu.correction_mag().flatten(), imu.orientation() * (180 / np.pi))
             time.sleep(0.1)
     else:
-        n = 200
-        measurements = np.zeros((3, n))
-        for k in range(n):
-            measurements[:, k] = np.array(imu.read_mag_raw())
-            time.sleep(0.01)
-        print(np.median(measurements, axis=1))
+        file_name = 'calibration.npy'
+        with open(file_name, 'wb') as f:
+            res = np.empty((4, 3, 1))
+            for i in range(4):
+                label = labels[i]
+                input('Press ENTER to measure ' + label)
+                measurements = np.zeros((3, n))
+                for k in range(n):
+                    measurements[:, k] = np.array(imu.read_mag_raw())
+                    time.sleep(0.01)
+                res[i] = np.median(measurements, axis=1, keepdims=True).astype(int)
+                print("%s = (%f, %f, %f)" % (label, *list(res[i].flatten())))
+            np.save(f, res)

@@ -11,25 +11,25 @@ import i2creal as i2c  # currently only real I2C on ddboats (no simulated I2C)
 
 beta = 46
 
-x1 = np.array([[-4620],
-               [-1186],
-               [+260]])
+x1 = np.array([[-4620, -4575],
+               [-1186, -1464],
+               [+260, 121]])
 
-x_1 = np.array([[+1690],
-               [-385],
-               [+770]])
+x_1 = np.array([[+1690, 1680],
+               [-385, -178],
+               [+770, 660]])
 
-x2 = np.array([[-990],
-               [-3880],
-               [+860]])
+x2 = np.array([[-990, -924],
+               [-3880, -3944],
+               [+860, 545]])
 
-x3 = np.array([[-1135],
-               [-1127],
-               [-2614]])
+x3 = np.array([[-1135, -1077],
+               [-1127, -915],
+               [-2614, -2539]])
 
-
-b = (-1/2) * (x1 + x_1)
-A = np.hstack((x1 + b, x2 + b, x3 + b)) / beta
+version = 1
+b = (-1/2) * (x1[:,version:version+1] + x_1[:,version:version+1])
+A = np.hstack((x1[:,version:version+1] + b, x2[:,version:version+1] + b, x3[:,version:version+1] + b)) / beta
 A_1 = np.linalg.inv(A)
 
 

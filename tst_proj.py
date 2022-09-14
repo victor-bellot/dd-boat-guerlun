@@ -26,9 +26,22 @@ elif iref==1:
     reference_lat = 48.4185
     reference_lon = -4.4739
 elif iref==2:
-    # reference point "guerledan"
-    reference_lat = 48.199111
-    reference_lon = -3.014930
+    # reference point "guerledan" : ponton
+    reference_lat = 48.199111  #48.199024
+    reference_lon = -3.014930  #-3.014790
+elif iref==3:
+    # reference point "guerledan" : bouée plage
+    reference_lat = 48.199807
+    reference_lon = -3.014802
+elif iref==4:
+    # reference point "guerledan" : bouée ouest
+    reference_lat = 48.199038
+    reference_lon = -3.015807
+elif iref==5:
+    # reference point "guerledan" : bouée nord
+    reference_lat = 48.199817
+    reference_lon = -3.015603
+
 reference_x,reference_y = projDegree2Meter(reference_lon,reference_lat)
 print ("ref",reference_x,reference_y,reference_lon,reference_lat)
 
