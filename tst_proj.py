@@ -27,8 +27,8 @@ elif iref==1:
     reference_lon = -4.4739
 elif iref==2:
     # reference point "guerledan" : ponton
-    reference_lat = 48.199111, '48.199024'
-    reference_lon = -3.014930, '-3.014790'
+    reference_lat = 48.199111  #48.199024
+    reference_lon = -3.014930  #-3.014790
 elif iref==3:
     # reference point "guerledan" : bouée plage
     reference_lat = 48.199807
