@@ -58,7 +58,7 @@ class Control:
 
         self.cst = {'left': {'kp': 0.01, 'ki': 0.01},
                     'right': {'kp': 0.01, 'ki': 0.01},
-                    'phi': {'kp': (3/4) / np.pi, 'ki': 8e-3 / np.pi}
+                    'phi': {'kp': (3/4) / np.pi, 'ki': 8e-3 / np.pi},
                     'ligne': {'kv': 1, 'kn': 1}}
 
         self.positions = positions
@@ -214,7 +214,7 @@ class Control:
 
     def suivi_ligne(self, duration_max, a, b, speed_rpm=3000, mission_name='log'):
         file = open(mission_name + '.txt', 'a')
-        file.write('duration: ' + str(duration_max) + ' ; ' + 'cap: ' + cap + ' ; spd: ' + str(speed_rpm) + '\n')
+        file.write('duration: ' + str(duration_max) + ' ; ' + ' ; spd: ' + str(speed_rpm) + '\n')
 
         self.reset()
         t0 = time.time()
