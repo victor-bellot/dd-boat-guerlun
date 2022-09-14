@@ -1,52 +1,23 @@
 import sys
 import time
 import math
-import numpy as np
+from tools import *
 from imu9_driver_v3 import Imu9IO
 from tc74_driver_v2 import TempTC74IO
 from arduino_driver_v2 import ArduinoIO
 from encoders_driver_v2 import EncoderIO
 
-data_keys = ['time', 'd_phi', 'rpm_l', 'rpm_r', 'rpm_lb', 'rpm_rb', 'th_l', 'th_r']
-
-
-def data_to_str(data):
-    str_inf = ""
-    for k, v in zip(data_keys, data):
-        str_inf += k + ': ' + str(int(v)) + ' ; '
-    return str_inf[:-3] + '\n'
-
-
-def cap_to_phi(cap):
-    if cap == 'S':
-        return np.pi
-    elif cap == 'W':
-        return np.pi / 2
-    elif cap == 'E':
-        return -np.pi / 2
-    else:
-        return 0.0
-
-
-def delta_odo(odo1, odo0):
-    dodo = odo1 - odo0
-    if dodo > 32767:
-        dodo -= 65536
-    if dodo < -32767:
-        dodo += 65536
-    return dodo
-
-
-def sawtooth(x):
-    return (x + np.pi) % (2 * np.pi) - np.pi
-
 
 class Control:
-    def __init__(self, dt=0.5):
+    def __init__(self, mission_name, dt=0.2):
+        self.mission_name = mission_name
+        self.log = open("log_files/log_%s.txt" % mission_name, 'a')
+
         self.ard = ArduinoIO()
         self.enc = EncoderIO()
         self.imu = Imu9IO()
         self.tpr = TempTC74IO()
+        self.gpsm = GpsManager()
 
         self.dt = dt
         # set delay between old and new measures : HERE=dt
@@ -56,7 +27,8 @@ class Control:
 
         self.cst = {'left': {'kp': 0.01, 'ki': 0.01},
                     'right': {'kp': 0.01, 'ki': 0.01},
-                    'phi': {'kp': (3/4) / np.pi, 'ki': 8e-3 / np.pi}}
+                    'phi': {'kp': (3/4) / np.pi, 'ki': 8e-3 / np.pi},
+                    'line': {'kd': 1, 'kn': 1}}
 
         self.step_max = 50
         self.u_max = 100
@@ -69,6 +41,13 @@ class Control:
         self.ei_left, self.ei_right, self.ei_phi = 0, 0, 0
         self.cmd_left, self.cmd_right = cmd_left_init, cmd_right_init
 
+    def close(self):
+        self.log.close()
+        fp = open("gpx_files/%s.gpx" % self.mission_name, "w")
+        fp.write(self.gpsm.gpx.to_xml())
+        fp.write("\n")
+        fp.close()
+
     def change_timing(self, dt):
         self.dt = dt
         self.enc.set_older_value_delay_v2(int(dt * 10))
@@ -78,6 +57,24 @@ class Control:
 
     def get_current_cap_degree(self):
         return self.get_current_cap() * (180 / np.pi)
+
+    def line_to_phi_bar(self, line):
+        coord_boat = self.gpsm.get_coord()
+
+        if coord_boat:
+            print("lx: %f ; ly: %f" % coord_boat)
+            pos_boat = coord_to_pos(coord_boat)
+
+            delta_p = pos_boat - line.pos0
+            kd, kn = self.cst['line']['kd'], self.cst['line']['kn']
+            force = kd * line.direction - kn * 2 * (line.normal.T @ delta_p) * line.normal
+
+            fx, fy = force.flatten()
+            return np.arctan2(fy, fx)
+
+        else:
+            print("Cannot read coordinates...")
+            return
 
     def get_rpm(self):
         # 1 : new ; 0 : old
@@ -139,9 +136,8 @@ class Control:
         # print('RPM BAR:', rpm_left_bar, rpm_right_bar)
         return rpm_left_bar, rpm_right_bar
 
-    def run(self, duration, cap='N', speed_rpm=3000, mission_name='log'):
-        file = open(mission_name + '.txt', 'a')
-        file.write('duration: ' + str(duration) + ' ; ' + 'cap: ' + cap + ' ; spd: ' + str(speed_rpm) + '\n')
+    def follow_cap(self, duration, cap='N', speed_rpm=3000):
+        self.log.write("duration: %i ; cap: %s ; spd: %i\n" % (duration, cap, speed_rpm))
 
         self.reset()
         t0 = time.time()
@@ -159,42 +155,87 @@ class Control:
             data = [(t0loop - t0) * 1000, delta_phi * (180 / np.pi), rpm_left, rpm_right,
                     rpm_left_bar, rpm_right_bar, temp_left, temp_right]
             information = data_to_str(data)
-            file.write(information)
+            self.log.write(information)
 
-            while (time.time() - t0loop) < self.dt:
+            # self.gpsm.draw_point()
+
+            print("Time left: ", self.dt - (time.time() - t0loop))
+            while time.time() - t0loop < self.dt:
                 time.sleep(0.001)
 
         self.ard.send_arduino_cmd_motor(0, 0)
-        file.close()
 
+    def follow_line(self, duration_max, line, speed_rpm=3000):
+        self.log.write("duration_max: %i ; a: %s ; b: %s ; spd: %i\n" %
+                       (duration_max, line.name0, line.name1, speed_rpm))
+
+        self.reset()
+        psi_bar = 0.0
+        t0 = time.time()
+        while (time.time() - t0) < duration_max:
+            t0loop = time.time()
+
+            temp = self.line_to_phi_bar(line)
+            psi_bar = temp if temp else psi_bar
+            phi = self.get_current_cap()
+            delta_phi = sawtooth(psi_bar - phi)
+            print("DELTA PHI: ", int(delta_phi * (180 / np.pi)))
+
+            rpm_left_bar, rpm_right_bar = self.leo_cap_and_speed(delta_phi, speed_rpm)
+            rpm_left, rpm_right = self.regulation_rpm(rpm_left_bar, rpm_right_bar)
+
+            temp_left, temp_right = self.tpr.read_temp()
+            data = [(t0loop - t0) * 1000, delta_phi * (180 / np.pi), rpm_left, rpm_right,
+                    rpm_left_bar, rpm_right_bar, temp_left, temp_right]
+            information = data_to_str(data)
+            self.log.write(information)
+
+            # self.gpsm.draw_point()
+
+            print("Time left: ", self.dt - (time.time() - t0loop))
+            while time.time() - t0loop < self.dt:
+                time.sleep(0.001)
+
+        self.ard.send_arduino_cmd_motor(0, 0)
 
 
 if __name__ == '__main__':
+    # Chose a mission name
+    try:
+        mn = sys.argv[1]
+    except:
+        mn = 'm'
+
     # Chose a duration
     try:
-        d = int(sys.argv[1])
+        d = int(sys.argv[2])
     except:
         d = math.inf
 
     # Chose a cap
     try:
-        c = str(sys.argv[2])
+        c = str(sys.argv[3])
     except:
         c = 'N'
 
     # Chose a speed
     try:
-        s = int(sys.argv[3])
+        s = int(sys.argv[4])
     except:
         s = 3000
 
-    ctr = Control()
+    ctr = Control(mn)
 
-    if d < 0:
-        d = abs(d)
-        ctr.run(d, speed_rpm=s, cap='N')
-        ctr.run(d, speed_rpm=s, cap='W')
-        ctr.run(d, speed_rpm=s, cap='S')
-        ctr.run(d, speed_rpm=s, cap='E')
-    else:
-        ctr.run(d, speed_rpm=s, cap=c)
+    # if d < 0:
+    #     d = abs(d)
+    #     ctr.follow_cap(d, speed_rpm=s, cap='N')
+    #     ctr.follow_cap(d, speed_rpm=s, cap='W')
+    #     ctr.follow_cap(d, speed_rpm=s, cap='S')
+    #     ctr.follow_cap(d, speed_rpm=s, cap='E')
+    # else:
+    #     ctr.follow_cap(d, speed_rpm=s, cap=c)
+
+    my_line = Line('ponton', 'plage')
+    ctr.follow_line(d, my_line)
+
+    ctr.close()

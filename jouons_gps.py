@@ -26,6 +26,7 @@ def get_pos(coords, r):
     y = r * (ly - ly_ponton)
     return x, y
 
+
 def cap_gps(pos_a, pos_b, pos_boat):
     v = np.array([pos_b[0] - pos_a[0], pos_b[1] - pos_a[1]])
     theta = math.atan2(v[1], v[0])
@@ -47,6 +48,7 @@ def get_cap(data):
     pos_boat = get_pos(lx, ly, r)
     psi_bar = cap_gps(a, b, pos_boat)
     return psi_bar
+
 
 if __name__ == '__main__':
     gps = GpsIO()

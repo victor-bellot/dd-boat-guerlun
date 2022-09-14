@@ -56,10 +56,10 @@ i = 0
 for track in gpx.tracks:
     for segment in track.segments:
         for point in segment.points:
-            #print('Point at ({0},{1}) -> {2}'.format(point.latitude, point.longitude, point.elevation))
+            # print('Point at ({0},{1}) -> {2}'.format(point.latitude, point.longitude, point.elevation))
             x,y = projDegree2Meter(point.longitude, point.latitude)
             lat,lon = projDegree2Meter(x,y,inverse=True)
-            #print (x,y,lat,lon,point.latitude,point.longitude)
+            # print (x,y,lat,lon,point.latitude,point.longitude)
             dx = x - reference_x
             dy = y - reference_y
             distance = np.sqrt(dx*dx+dy*dy)
