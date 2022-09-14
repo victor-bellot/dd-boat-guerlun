@@ -168,6 +168,7 @@ class Control:
         file.close()
 
 
+
 if __name__ == '__main__':
     # Chose a duration
     try:
