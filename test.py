@@ -1,4 +1,4 @@
-print('coucou')
-print('bonsoir')
-print('au revoir')
-print('comment ça va ?')
+import numpy as np
+
+tab = np.load('calibration.npy')
+print(tab)

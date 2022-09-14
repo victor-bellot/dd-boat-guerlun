@@ -11,26 +11,30 @@ import i2creal as i2c  # currently only real I2C on ddboats (no simulated I2C)
 
 beta = 46
 
-x1 = np.array([[-4620, -4575],
-               [-1186, -1464],
-               [+260, 121]])
+# x1 = np.array([[-4620, -4575, -4783],
+#                [-1186, -1464, -1016],
+#                [+260, 121, 201]])
+#
+# x_1 = np.array([[+1690, 1680, 1638],
+#                [-385, -178, -149],
+#                [+770, 660, 670]])
+#
+# x2 = np.array([[-990, -924, -1283],
+#                [-3880, -3944, -3812],
+#                [+860, 545, 464]])
+#
+# x3 = np.array([[-1135, -1077, -791],
+#                [-1127, -915, -883],
+#                [-2614, -2539, -2760]])
+#
+# # version 0 : selon la corde ; version 1 : selon le nord téléphone ; version 2 : nul
+# version = 2
 
-x_1 = np.array([[+1690, 1680],
-               [-385, -178],
-               [+770, 660]])
+measurements = np.load('calibration.npy')
+x1, x_1, x2, x3 = (measurements[k] for k in range(4))
 
-x2 = np.array([[-990, -924],
-               [-3880, -3944],
-               [+860, 545]])
-
-x3 = np.array([[-1135, -1077],
-               [-1127, -915],
-               [-2614, -2539]])
-
-# version 0 : selon la corde ; version 1 : selon le nord téléphone
-version = 1
-b = (-1/2) * (x1[:,version:version+1] + x_1[:,version:version+1])
-A = np.hstack((x1[:,version:version+1] + b, x2[:,version:version+1] + b, x3[:,version:version+1] + b)) / beta
+b = (-1/2) * (x1 + x_1)
+A = np.hstack((x1 + b, x2 + b, x3 + b)) / beta
 A_1 = np.linalg.inv(A)
 
 
