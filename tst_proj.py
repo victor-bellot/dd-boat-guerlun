@@ -41,6 +41,7 @@ elif iref==5:
     # reference point "guerledan" : bouée nord
     reference_lat = 48.199817
     reference_lon = -3.015603
+
 reference_x,reference_y = projDegree2Meter(reference_lon,reference_lat)
 print ("ref",reference_x,reference_y,reference_lon,reference_lat)
 
