@@ -11,6 +11,7 @@ class Control:
     def __init__(self, mission_name, dt=0.5):
         self.mission_name = mission_name
         self.log = open("log_files/log_%s.txt" % mission_name, 'a')
+        self.traj = open("traj_files/traj_%s.txt" % mission_name, 'a')
 
         self.ard = ArduinoIO()
         self.enc = EncoderIO()
@@ -47,10 +48,7 @@ class Control:
 
     def close(self):
         self.log.close()
-        fp = open("gpx_files/%s.gpx" % self.mission_name, "w")
-        fp.write(self.gpsm.gpx.to_xml())
-        fp.write("\n")
-        fp.close()
+        self.traj.close()
 
     def change_timing(self, dt):
         self.dt = dt
@@ -67,7 +65,8 @@ class Control:
 
         if self.gpsm.updated:
             pos_boat = coord_to_pos(coord_boat)
-            print("BOAT POS:", pos_boat)
+            x, y = pos_boat.flatten()
+            self.traj.write("%f;%f\n" % (x, y))
 
             kd, kn = self.cst['line']['kd'], self.cst['line']['kn']
             force = get_force(line, pos_boat, kd, kn)
@@ -183,8 +182,6 @@ class Control:
             information = data_to_str(data)
             self.log.write(information)
 
-            self.gpsm.draw_point()
-
             # print("Time left: ", self.dt - (time.time() - t0loop))
             while time.time() - t0loop < self.dt:
                 self.gpsm.update_coord()
@@ -199,7 +196,7 @@ class Control:
         self.reset()
         psi_bar = line.get_psi()
         t0 = time.time()
-        while (time.time() - t0) < duration_max:
+        while (time.time() - t0) < duration_max:  # TO ADD : ending conditions
             t0loop = time.time()
 
             temp = self.line_to_phi_bar(line)
@@ -218,8 +215,6 @@ class Control:
                     rpm_left_bar, rpm_right_bar, temp_left, temp_right]
             information = data_to_str(data)
             self.log.write(information)
-
-            # self.gpsm.draw_point()
 
             # print("Time left: ", self.dt - (time.time() - t0loop))
             while time.time() - t0loop < self.dt:

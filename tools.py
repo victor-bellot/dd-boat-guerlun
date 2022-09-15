@@ -1,4 +1,3 @@
-import gpxpy.gpx
 import numpy as np
 from gps_driver_v2 import GpsIO
 
@@ -89,18 +88,9 @@ def get_force(line, pos, kd, kn):
 class GpsManager:
     def __init__(self):
         self.gps = GpsIO()
-        self.gpx = gpxpy.gpx.GPX()
-        self.gpx_track = gpxpy.gpx.GPXTrack()
-        self.gpx.tracks.append(self.gpx_track)
-        self.gpx_segment = gpxpy.gpx.GPXTrackSegment()
-        self.gpx_track.segments.append(self.gpx_segment)
 
         self.coord = coordinates['ponton']
         self.updated = False
-
-    def draw_point(self):
-        lat, lon = self.coord
-        self.gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(lat, lon))
 
     def update_coord(self):
         msg, data = self.gps.read_gll_non_blocking()

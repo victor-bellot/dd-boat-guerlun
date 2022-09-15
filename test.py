@@ -1,5 +1,5 @@
-from tools import *
-from roblib import *
+# from tools import *
+# from roblib import *
 
 
 def f(x1, x2):
@@ -16,14 +16,19 @@ def f(x1, x2):
 
 
 if __name__ == '__main__':
-    width = 50
-    step = 10
-    line = Line('plage', 'ouest')
+    # width = 50
+    # step = 10
+    # line = Line('plage', 'ouest')
+    #
+    # print(line.pos0, line.pos1)
+    #
+    # xmin, xmax, ymin, ymax = -150, 150, 0, 200
+    # ax = init_figure(xmin, xmax, ymin, ymax)
+    # draw_field(ax, f, xmin, xmax, ymin, ymax, step)
+    #
+    # pause(20)
 
-    print(line.pos0, line.pos1)
+    t = [(1, 2), (3, 4)]
+    f = open('coucou', 'w')
+    f.write(str(t))
 
-    xmin, xmax, ymin, ymax = -150, 150, 0, 200
-    ax = init_figure(xmin, xmax, ymin, ymax)
-    draw_field(ax, f, xmin, xmax, ymin, ymax, step)
-
-    pause(20)
