@@ -60,7 +60,7 @@ class Control:
     def line_to_phi_bar(self, line):
         coord_boat = self.gpsm.coord
 
-        if coord_boat:
+        if self.gpsm.updated:
             pos_boat = coord_to_pos(coord_boat)
             print("BOAT POS:", pos_boat)
 
@@ -149,7 +149,7 @@ class Control:
             information = data_to_str(data)
             self.log.write(information)
 
-            # self.gpsm.draw_point()
+            self.gpsm.draw_point()
 
             # print("Time left: ", self.dt - (time.time() - t0loop))
             while time.time() - t0loop < self.dt:

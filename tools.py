@@ -96,6 +96,7 @@ class GpsManager:
         self.gpx_track.segments.append(self.gpx_segment)
 
         self.coord = coordinates['ponton']
+        self.updated = False
 
     def draw_point(self):
         lat, lon = self.coord
@@ -105,6 +106,7 @@ class GpsManager:
         msg, data = self.gps.read_gll_non_blocking()
         if msg and abs(data[0]) > 1e-3:
             self.coord = convert(data)
+            self.updated = True
 
 
 class Line:
