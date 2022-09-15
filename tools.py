@@ -2,14 +2,14 @@ import gpxpy.gpx
 import numpy as np
 from gps_driver_v2 import GpsIO
 
-data_keys = ['time', 'd_phi', 'rpm_l', 'rpm_r', 'rpm_lb', 'rpm_rb', 'th_l', 'th_r']
+data_keys = ['time', 'd_psi', 'rpm_l', 'rpm_r', 'rpm_lb', 'rpm_rb', 'th_l', 'th_r']
 
-coordinates = {'ponton': (48.199024, -3.014790),
-               'nord': (48.199817, -3.015603),
-               'ouest': (48.199038, -3.015807),
-               'plage': (48.199807, -3.014803)}
+coordinates = {'ponton': [48.199024, -3.014790],
+               'nord': [48.199817, -3.015603],
+               'ouest': [48.199038, -3.015807],
+               'plage': [48.199807, -3.014803]}
 
-rho = 154700  # to check
+rho = 110e3  # 6366376  # to check
 
 
 def data_to_str(data):
@@ -19,7 +19,7 @@ def data_to_str(data):
     return str_inf[:-3] + '\n'
 
 
-def cap_to_phi(cap):
+def cap_to_psi(cap):
     if cap == 'S':
         return np.pi
     elif cap == 'W':
@@ -57,25 +57,33 @@ def cvt_gll_ddmm_2_dd(st):
     return olat, olon
 
 
+# coordinate are given in (ly, lx) format
 def convert(data):
-    lx_raw = data[0]
-    ly_raw = data[2]
-    lx = lx_raw // 100
+    ly_raw = data[0]
+    lx_raw = data[2]
     ly = ly_raw // 100
-    lx += (lx_raw % 100) / 60
+    lx = lx_raw // 100
     ly += (ly_raw % 100) / 60
+    lx += (lx_raw % 100) / 60
     if data[3] == 'W':
-        ly = -ly
-    return lx, ly
+        lx = -lx
+    return ly, lx
 
 
 # coord : spherical ; pos : cartesian
 def coord_to_pos(coords, origin='ponton'):
-    lx, ly = coords
-    lxo, lyo = coordinates[origin]
-    x = rho * np.cos(ly) * (lx - lxo)
+    ly, lx = coords
+    lyo, lxo = coordinates[origin]
+    x = rho * np.cos(ly * (np.pi / 180)) * (lx - lxo)
     y = rho * (ly - lyo)
     return np.array([[x], [y]])
+
+
+def get_force(line, pos, kd, kn):
+    delta_p = pos - line.pos0
+    normal = line.get_normal_toward(pos)
+    force = kd * line.get_direction() - kn * 2 * (normal.T @ delta_p) * normal
+    return force
 
 
 class GpsManager:
@@ -87,16 +95,16 @@ class GpsManager:
         self.gpx_segment = gpxpy.gpx.GPXTrackSegment()
         self.gpx_track.segments.append(self.gpx_segment)
 
-    def draw_point(self):
-        gps_data_string = self.gps.read_gll()
-        if not (gps_data_string[0] == 0.0):
-            lat, lon = cvt_gll_ddmm_2_dd(gps_data_string)
-            self.gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(lat, lon))
+        self.coord = coordinates['ponton']
 
-    def get_coord(self):
+    def draw_point(self):
+        lat, lon = self.coord
+        self.gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(lat, lon))
+
+    def update_coord(self):
         msg, data = self.gps.read_gll_non_blocking()
-        if msg:
-            return convert(data)
+        if msg and abs(data[0]) > 1e-3:
+            self.coord = convert(data)
 
 
 class Line:
@@ -117,8 +125,17 @@ class Line:
         self.pos0 = coord_to_pos(self.coord0)
         self.pos1 = coord_to_pos(self.coord1)
 
+    def get_direction(self):
         delta_pos = self.pos1 - self.pos0
-        self.direction = delta_pos / np.linalg.norm(delta_pos)
+        return delta_pos / np.linalg.norm(delta_pos)
 
-        theta = np.arctan2(self.direction[1], self.direction[0])
-        self.normal = np.array([-np.sin(theta), np.cos(theta)])
+    def get_normal_toward(self, pos):
+        d = self.get_direction()
+        m = pos - self.pos0
+        a = np.sum(m * d) * d
+        n = m - a
+        return n / np.linalg.norm(n)
+
+    def get_psi(self):
+        fx, fy = self.get_direction().flatten()
+        return np.arctan2(-fx, fy)

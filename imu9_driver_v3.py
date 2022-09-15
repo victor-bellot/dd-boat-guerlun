@@ -11,7 +11,7 @@ import i2creal as i2c  # currently only real I2C on ddboats (no simulated I2C)
 
 beta = 1  # 46 if u want to measure the magnetic field LOL
 
-measurements = np.load('cardinals.npy')
+measurements = np.load('calibration.npy')
 x1, x_1, x2, x3 = (measurements[k] for k in range(4))
 
 b = (-1/2) * (x1 + x_1)

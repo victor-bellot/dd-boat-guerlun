@@ -8,7 +8,7 @@ labels = ['x1', 'x_1', 'x2', 'x3']
 
 def get_time():
     lt = time.localtime()
-    return "%i-%i-%i" % (lt.tm_mday, lt.tm_hour, lt.tm_min)
+    return "%i-%i-%i-%i" % (lt.tm_mday, lt.tm_hour, lt.tm_min, lt.tm_sec)
 
 
 if __name__ == "__main__":

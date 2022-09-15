@@ -132,7 +132,7 @@ class GpsIO:
                         val[3] = vv[4]
                     if len(vv[5]) > 0:
                         val[4] = float(vv[5])
-                    break # GPGLL found !  exit !
+                    break  # GPGLL found !  exit !
         return val
 
     def read_gll_non_blocking(self,timeout=0.01):
@@ -180,14 +180,16 @@ if __name__ == "__main__":
     gps.get_filter_speed()
 
     # test non blocking read for 20 positions
-    cnt=0
+    cnt = 0
     while True:
-        gll_ok,gll_data=gps.read_gll_non_blocking()
+        gll_ok, gll_data = gps.read_gll_non_blocking()
         if gll_ok:
-            print (gll_data)
+            print(gll_data)
             cnt += 1
-            if cnt==20:
+            if cnt == 20:
                 break
+        else:
+            print(".", end='')
         time.sleep(0.01)
 
     gps.close()
