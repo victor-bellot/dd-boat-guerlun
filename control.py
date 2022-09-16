@@ -196,12 +196,25 @@ class Control:
         self.reset()
         psi_bar = line.get_psi()
         t0 = time.time()
+        cnt = 0
         while (time.time() - t0) < duration_max:  # TO ADD : ending conditions
             t0loop = time.time()
 
+            # condition d'arrêt : distance à la bouée d'arrivée
+            coord_boat = self.gpsm.coord
+            pos_boat = coord_to_pos(coord_boat)
+            dist = np.linalg.norm(line.pos1 - pos_boat)
+            # print(dist)
+            if dist <= 15:
+                cnt += 1
+                if cnt > 5:
+                    break
+            else:
+                cnt = 0
+
             temp = self.line_to_phi_bar(line)
             psi_bar = temp if temp else psi_bar
-            print("PSI BAR: ", psi_bar * (180 / np.pi))
+            # print("PSI BAR: ", psi_bar * (180 / np.pi))
 
             psi = self.get_current_cap()
             delta_psi = sawtooth(psi_bar - psi)
@@ -209,10 +222,10 @@ class Control:
 
             rpm_left_bar, rpm_right_bar = self.leo_cap_and_speed(delta_psi, speed_rpm)
             rpm_left, rpm_right = self.regulation_rpm(rpm_left_bar, rpm_right_bar)
-
+    
             temp_left, temp_right = self.tpr.read_temp()
             data = [(t0loop - t0) * 1000, delta_psi * (180 / np.pi), rpm_left, rpm_right,
-                    rpm_left_bar, rpm_right_bar, temp_left, temp_right]
+                    rpm_left_bar, rpm_right_bar, temp_left, temp_right, pos_boat]
             information = data_to_str(data)
             self.log.write(information)
 
@@ -254,7 +267,7 @@ if __name__ == '__main__':
     mn = input("Mission name: ")
     ctr = Control(mn)
 
-    mt = input("Mission type (psi, square, line, test): ")
+    mt = input("Mission type (psi, square, line, test, triangle): ")
 
     if mt == 'line':
         a = input("Starting point: ")
@@ -268,6 +281,22 @@ if __name__ == '__main__':
         s = 3000 if s_input == '' else int(s_input)
 
         ctr.follow_line(d, my_line, speed_rpm=s)
+    
+    elif mt == 'triangle':
+        #d_input = input("Test duration: ")
+        #d = math.inf if d_input == '' else int(d_input)
+        d = 200
+
+        #s_input = input("Boat RPM speed: ")
+        #s = 3000 if s_input == '' else int(s_input)
+        s = 3000
+
+        line1 = Line('ponton', 'ouest')
+        line2 = Line('ouest', 'nord')
+        line3 = Line('nord', 'ponton')
+        ctr.follow_line(d, line1, speed_rpm=s)
+        ctr.follow_line(d, line2, speed_rpm=s)
+        ctr.follow_line(d, line3, speed_rpm=s)
 
     elif mt == 'square':
         d_input = input("Side duration: ")
@@ -292,7 +321,7 @@ if __name__ == '__main__':
         p = (p_input == 1)
 
         ctr.test_regulation_rpm(d, rpm_spd=s, proportion=p)
-
+    
     else:
         d_input = input("Mission duration: ")
         d = math.inf if d_input == '' else int(d_input)
