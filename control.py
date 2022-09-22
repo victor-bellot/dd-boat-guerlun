@@ -61,6 +61,9 @@ class Control:
         return self.get_current_cap() * (180 / np.pi)
 
     def line_to_phi_bar(self, line):
+        """prend en argument une ligne (du type line définit dans le fichier tools.py);
+        renvoie le cap à suivre pour suivre la ligne entrée en argument (line) (en s'appuyant sur la position gps des extremités de la ligne et celle mesurée par le bateau);
+        écrit également les coordonnées du bateau dans le fichier traj, ces coordonnées pourront être récupérées à postériori pour tracer la trajectoire du bateau"""
         coord_boat = self.gpsm.coord
 
         if self.gpsm.updated:
@@ -75,6 +78,7 @@ class Control:
             return np.arctan2(-fx, fy)
 
     def get_rpm(self):
+        """renvoie la vitesse de rotation des moteurs mesurée par les encodeurs (en rotation par minute)"""
         # 1 : new ; 0 : old
         st1, st0 = self.enc.get_last_and_older_values_v2()
         data_encoders0 = np.array(st0.split(",")).astype(np.float)
@@ -92,6 +96,9 @@ class Control:
         return rpm_left, rpm_right
 
     def regulation_rpm(self, rpm_left_bar, rpm_right_bar):
+        """prend en argument une consigne de vitesse de rotation pour chaque moteur (rpm_left_bar pour le moteur gauche et rpm_right_bar pour le moteur de droite en rotation par minute);
+        asservie la vitesse de rotation des moteurs par un correcteur proportionnel-dérivé et commande les moteurs en conséquence;
+        la variation de tension de commande des moteurs entre deux tics de calcul est seuillée à la valeur step_max"""
         rpm_left, rpm_right = self.get_rpm()
 
         # left motor
@@ -148,6 +155,8 @@ class Control:
         return rpm_left, rpm_right
 
     def leo_cap_and_speed(self, delta_psi, rpm_max):
+        """prend en argument un cap (dela_psi : angle avec le nord en degrés) et une vitesse de rotation maximale des moteurs (rpm_max : en rotation par minute); 
+        renvoie les consignes en rotation par minute à donner aux moteurs pour que le bateau suive le cap demandé (ces valeurs ne dépasseront jamais la valeur entrée en paramètre (rmp_max))"""
         self.ei_psi += delta_psi * self.dt
         e_phi = self.cst['phi']['kp'] * delta_psi + self.cst['phi']['ki'] * self.ei_psi
 
@@ -162,6 +171,11 @@ class Control:
         return rpm_left_bar, rpm_right_bar
 
     def follow_psi(self, duration, psi_bar, speed_rpm):
+        """prend en argument une durée de mission (duration : en seconde), un cap à suivre (psi_bar : angle avec le nord en degrés) et une vitesse de rotation maximale des moteurs (speed_rpm : en rotation par minute);
+        écrit dans le fichier log les informations voulues (description de la mission en début d'execution puis à chaque boucle de calcul, le temps depuis le début de la mission,le cap mesuré par le bateau, la vitesse de rotation mesurée de chaque moteur, la consigne en rotation par minute donnée à chaque moteur et la température mesurée de chaque moteur);
+        enregistre également à chaque boucle de calcul, la position gps du bateau;
+        fait appelle aux méthodes d'asservissement du cap et de la rotation des moteurs pour faire se déplacer le bateau en ligne droite en suivant le cap entré en argument (psi_bar) pendant une durée (duration) sans que la consigne des moteurs ne dépasse la vitesse de rotation speed_rpm"""
+
         self.log.write("duration: %i ; psi_bar: %s ; spd: %i\n" % (duration, psi_bar, speed_rpm))
 
         self.reset()
@@ -190,6 +204,10 @@ class Control:
         self.ard.send_arduino_cmd_motor(0, 0)
 
     def follow_line(self, duration_max, line, speed_rpm):
+        """prend en argument une durée maximale de mission (duration_max : en seconde), une ligne (line : du type line définit dans le fichier tools) et une vitesse de rotation maximale des moteurs (speed_rpm : en rotation par minute));
+        fait appel à la méthode line_to_phi_bar pour obtenir un cap à suivre à chaque boucle de calcul afin de suivre au mieux la ligne entrée en paramètre (line) puis agit de la même manière que follow_psi pour suivre ce cap et remplir les logs;
+        le bateau s'arrête lorsque la condition d'arrêt est remplie : l'objectif (définit par la position gps de la bouée visée dans line) est situé à 15 mètres ou moins du bateau, si cette condition n'est pas remplie au bout de duration_max, le bateau s'arrête"""
+
         self.log.write("duration_max: %i ; a: %s ; b: %s ; spd: %i\n" %
                        (duration_max, line.name0, line.name1, speed_rpm))
 
