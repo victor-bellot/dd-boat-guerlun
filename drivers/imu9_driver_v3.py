@@ -9,9 +9,9 @@ import i2creal as i2c  # currently only real I2C on ddboats (no simulated I2C)
 # LIS3DML 0x1e  (mag sensor)
 # LSM6    0x6b  (accelero - gyro)
 
-beta = 1  # 46 if u want to measure the magnetic field LOL
+beta = 1  # 46 if u want to measure the magnetic field
 
-measurements = np.load('calibration.npy')
+measurements = np.load('../calibration_data/calibration.npy')
 x1, x_1, x2, x3 = (measurements[k] for k in range(4))
 
 b = (-1/2) * (x1 + x_1)

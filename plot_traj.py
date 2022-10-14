@@ -1,10 +1,13 @@
 from matplotlib import pyplot as plt
 
 if __name__ == '__main__':
-    f = open("traj_eval2.txt", 'r')
+    """
+    Scatter trajectories
+    """
+    f = open("gps_data/traj_eval2.txt", 'r')
     x = []
     y = []
-    for line in f.readlines():
+    for line in f.readlines()[20:]:
         xs, ys = line.split(';')
         x.append(float(xs))
         y.append(float(ys))

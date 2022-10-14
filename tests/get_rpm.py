@@ -1,6 +1,4 @@
-import encoders_driver_v2 as encdrv
-import arduino_driver_v2 as ardudrv
-import sys
+from python.project.guerledan0.hydre2garatedan.drivers import arduino_driver_v2 as ardudrv, encoders_driver_v2 as encdrv
 import time
 
 

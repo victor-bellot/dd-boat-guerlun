@@ -1,6 +1,5 @@
 import time
-import sys
-import gps_driver_v2 as gpsdrv
+from python.project.guerledan0.hydre2garatedan.drivers import gps_driver_v2 as gpsdrv
 import gpxpy.gpx
 
 # record GPS (GPGLL ) in a GPX file
@@ -51,7 +50,7 @@ while True:
     if (time.time()-t0) > tmax:
         break
 
-fp = open("tst.gpx","w")
+fp = open("../gps_data/tst.gpx", "w")
 fp.write(gpx.to_xml())
 fp.write("\n")
 fp.close()

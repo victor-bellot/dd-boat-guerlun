@@ -49,7 +49,7 @@ print ("ref",reference_x,reference_y,reference_lon,reference_lat)
 try:
     gpx_file = open(sys.argv[1], 'r')
 except:
-    gpx_file = open('tst_ensta_stadium_20210929.gpx', 'r')
+    gpx_file = open('../gps_data/tst_ensta_stadium_20210929.gpx', 'r')
 
 gpx = gpxpy.parse(gpx_file)
 i = 0

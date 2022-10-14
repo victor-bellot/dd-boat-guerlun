@@ -1,5 +1,16 @@
+"""
+Data, functions and classes used in the Control class
+IMPORTANT : we transpose the GPS coordinates world into
+a cartesian one in which the origin is 'ponton' unit is
+meter, East corresponds the positive 'x' and North
+corresponds to positive 'y'.
+For orientation(psi), North corresponds to 0° and
+East to +90°.
+"""
+
+
 import numpy as np
-from gps_driver_v2 import GpsIO
+from drivers.gps_driver_v2 import GpsIO
 
 data_keys = ['time', 'd_psi', 'rpm_l', 'rpm_r', 'rpm_lb', 'rpm_rb', 'th_l', 'th_r']
 
@@ -11,6 +22,7 @@ coordinates = {'ponton': [48.199024, -3.014790],
 rho = 110e3  # 6366376  # to check
 
 
+# Useful for logging
 def data_to_str(data):
     str_inf = ""
     for k, v in zip(data_keys, data):
@@ -78,6 +90,8 @@ def coord_to_pos(coords, origin='ponton'):
     return np.array([[x], [y]])
 
 
+# Given a line, a boat position and some constants
+# Return the 'force' of the follow line vector field
 def get_force(line, pos, kd, kn):
     delta_p = pos - line.pos0
     normal = line.get_normal_toward(pos)
@@ -86,6 +100,10 @@ def get_force(line, pos, kd, kn):
 
 
 class GpsManager:
+    """
+    Manage a GPS
+    Allow to update it and save the current localisation
+    """
     def __init__(self):
         self.gps = GpsIO()
 
@@ -100,6 +118,13 @@ class GpsManager:
 
 
 class Line:
+    """
+    Represent a line defined by 2 points :
+    a starting point and an ending one
+    It is created from GPS coordinates
+    Then cartesian positions are used for the
+    computation of the line direction, normal and cap.
+    """
     def __init__(self, name0, name1, coord0=None, coord1=None):
         self.name0 = name0
         self.name1 = name1
