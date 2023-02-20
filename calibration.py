@@ -36,4 +36,4 @@ if __name__ == "__main__":
                     time.sleep(0.01)
                 res[i] = np.median(measurements, axis=1, keepdims=True)
                 print("%s = (%f, %f, %f)" % (label, *list(res[i].flatten())))
-            np.save(f, res)
+            np.save(file_name, res)
