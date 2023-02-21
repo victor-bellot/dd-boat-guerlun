@@ -4,7 +4,7 @@ if __name__ == '__main__':
     """
     Scatter trajectories
     """
-    f = open("gps_data/traj_eval2.txt", 'r')
+    f = open("traj_eval2.txt", 'r')
     x = []
     y = []
     for line in f.readlines()[20:]:
